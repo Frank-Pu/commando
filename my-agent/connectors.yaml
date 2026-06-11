@@ -1,0 +1,66 @@
+version: 0.1
+
+# Backend — 唯一 active，承载 Workbench + Scheduler 物化
+backend:
+  active: feishu
+  feishu:
+    workspaces:
+      wiki_space_id: ""                          # 待填：commando materialize 时自动创建或从 atu 沿用
+      bitable_app_token: ""                      # 待填：commando materialize 时自动创建
+    credentials_ref: feishu_credentials
+
+# Source connectors — 数据进 / 数据出
+sources:
+  # ── 信息源 ──
+  - name: reddit
+    driver: reddit
+    config:
+      subreddits:
+        - r/languagelearning
+        - r/LearnEnglish
+        - r/ChineseLanguage
+        - r/IWantToLearn
+      min_upvote: 30
+      time_window: 24h
+    credentials_ref: reddit_credentials
+
+  - name: outlet_rss
+    driver: rss
+    config:
+      feeds: []                                  # 待填具体 RSS URL（推荐：The Economist / Atlantic / NYT / New Yorker / Aeon）
+      max_per_feed: 5
+      time_window: 24h
+
+  # ── 数据回收 ──
+  - name: xhs_data
+    driver: xiaohongshu_third_party
+    status: not_yet_connected                    # 待 commando connect xiaohongshu_third_party
+    config:
+      account_id_business: ""
+      account_id_personal: ""
+      metrics: [views, likes, saves, comments, attribution_to_paid]
+    credentials_ref: xhs_credentials
+
+  - name: zhihu_data
+    driver: zhihu_open
+    status: not_yet_connected
+    config:
+      account_id: ""
+    credentials_ref: zhihu_credentials
+
+  - name: stripe
+    driver: stripe
+    status: not_yet_connected
+    config:
+      mode: read_only
+    credentials_ref: stripe_credentials
+
+  - name: plausible_or_umami
+    driver: plausible
+    status: prerequisite_blocked                 # 🚨 归因黑箱前置阻塞 — Qihang 必须先部署
+    config:
+      site_id: "lemingle.com"
+    credentials_ref: plausible_credentials
+    note: |
+      ⚠️ 阻塞中：Qihang 尚未部署归因工具。在部署前，weekly_data_review 任务
+      的归因部分会跑空。建议优先级 — 这是 pre-PMF 阶段最大的可观测性缺口。

@@ -1,0 +1,217 @@
+# 阿土 Schedule v0.2
+# 本地是 source of truth；飞书多维表（Phase 2 接入）是双向同步的镜像。
+#
+# Schema 约定（详见 runtime/core/schemas.py）：
+#   - 触发器统一结构化：trigger: {type: cron|chain|manual, ...}
+#   - 永远 skills: [...] 数组形式，单个 skill 也写成单元素
+#   - 输出落点结构化：outputs: {working_memory, episodic, workbench}
+#   - 用 tags 区分阶段（demo / phase-1 / phase-2 ...）
+#
+# Cron 表达式格式：分 时 日 月 周（5 段标准 Unix 风格，时区按顶层 timezone）
+
+version: "0.2"
+timezone: "Asia/Shanghai"
+
+tasks:
+  # ---------- Phase 1 hello-world ----------
+  - id: hello_world
+    name: HelloWorld 端到端测试
+    enabled: false  # Phase 1 demo 已验证完，关掉避免日志噪音
+    trigger:
+      type: cron
+      cron: "*/5 * * * *"
+    skills: [hello_world]
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: done
+    tags: [demo, phase-1]
+
+  # ---------- Phase 2 第一个真实 Skill（手动触发，靠 --input/--input-file 喂源帖） ----------
+  - id: xhs_bilingual_bridge_draft
+    name: Bilingual Bridge 图文初稿
+    enabled: true
+    trigger:
+      type: manual
+    skills: [xhs-bilingual-bridge]
+    inputs:
+      source_post: ""        # 通过 --input-file source_post=path/to/post.md 注入
+      source_url: ""         # 通过 --input source_url=https://... 注入
+      source_platform: reddit
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: blocked     # Charter 6.4 硬 gate：发布动作必须 blocked + @Qihang
+      draft_doc: true        # 输出落到飞书 Drafts 知识库 docx，便于在飞书里改稿
+    tags: [phase-2, content-draft]
+
+  # ---------- Phase 2+ 真实任务（暂未启用） ----------
+  - id: morning_sense
+    name: 晨间感知 · Reddit 源发掘
+    enabled: true                 # 2026-05-28 降频：小红书战略降级，从每天 → 周一/周四（com.atu.morning-sense）
+    trigger:
+      type: cron
+      cron: "22 8 * * 1,4"        # 周一、周四 08:22；cron 仅作记录，实际由 launchd 触发
+    skills: [reddit-source-mining]
+    inputs:
+      # 2026-05-22 v2 校准：12 sub flat → 9 sub 三档轮换。
+      # 老版每天全扫 12 sub 撞超时 (~20 min)；新版每天扫 6 sub (3 core + 2 rotate + 1 wildcard)，
+      # 预期 6-8 min 稳在 12 min timeout 内。每个 sub 一周触达 3-4 次。
+      subreddit_tiers:
+        core:        # 永远全扫——主 ICP 锚点 + 历史最佳产地
+          - r/AskWomen              # 女性 ICP 三杀
+          - r/TwoXChromosomes       # 5/12 高水位帖 2708 曝光的产地
+          - r/CasualConversation    # 故事/共情，5/19「20岁害怕长大」来源
+        rotate:      # 每天按 day_of_year 轮换挑 rotate_per_run 个
+          - r/AmITheAsshole         # 反转/道德审判，钩子情绪最强
+          - r/socialskills          # 心理/社交成长
+          - r/college               # 准留学生场景锚点
+          - r/LifeProTips           # 唯一 SEO 长尾源
+        wildcard:    # 每天挑 wildcard_per_run 个——大流量池，蹭爆款机会
+          - r/AskReddit             # 钩子之王，需重筛 ICP
+          - r/AskMen                # 男性视角，搭配主 ICP 看反差
+      rotate_per_run: 2
+      wildcard_per_run: 1
+      time_window: week
+      # 2026-05-14 校准：把 posts_per_sub 6→4 + 阈值收紧
+      # 之前 12 sub × 6 帖 → 候选 ~50 个进 LLM，prompt 过长 → claude CLI 偶尔 exit-1 崩溃
+      # 现在 12 sub × 4 帖 → 起始 48 个，硬过滤后 25-35 进 LLM，prompt 适中
+      posts_per_sub: 4
+      min_post_score: 500         # 300→500，更严格
+      min_post_comments: 40       # 30→40
+      top_comments_per_post: 5
+      min_comment_score: 40       # 30→40
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: done             # 自动任务，无人工 gate；候选落选题池等审
+    tags: [phase-2, reddit-source]
+
+  - id: outlet_daily_draft
+    name: 外刊每日切片
+    enabled: true                 # 2026-05-28 降频：小红书战略降级，从每天 → 周一/周四（com.atu.outlet-daily）
+    trigger:
+      type: cron
+      cron: "0 9 * * 1,4"         # 周一、周四 09:00
+    skills: [xhs-outlet-bridge]
+    inputs:
+      # 留空 → 用 outlet_pipeline.DEFAULT_FEEDS（Guardian/BBC/Conversation/Atlantic）
+      # 想覆写就在这里给 list[{url, source}]
+      feeds: []
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: done             # 自动任务，全链路无截图，跑完即出图
+      draft_doc: true             # 写飞书 Drafts docx，post-skill 自动嵌图
+    tags: [phase-2, content-draft, outlet]
+
+  - id: competitor_scan
+    name: 竞品扫描
+    enabled: false
+    trigger:
+      type: cron
+      cron: "0 10 * * 1-5"
+    skills: [竞品追踪]
+    outputs:
+      episodic: true
+      workbench: inbox
+    tags: [phase-2]
+
+  - id: drafter_morning
+    name: 内容初稿生成
+    enabled: false
+    trigger:
+      type: cron
+      cron: "0 11 * * 1-5"
+    skills: [营销文案]
+    condition: "选题池.状态='已选'"
+    outputs:
+      episodic: true
+      workbench: inbox
+    tags: [phase-2]
+
+  - id: self_check
+    name: 发布前自检
+    enabled: false
+    trigger:
+      type: chain
+      after: drafter_morning
+    skills:
+      - 品牌调性审查
+      - 广告合规检查
+    outputs:
+      episodic: true
+      workbench: inbox
+    tags: [phase-2, gate]
+
+  - id: weekly_trends_scan_catch
+    name: Weekly Trends Scanning & Catching
+    enabled: true                 # launchd 每周五 12:00 跑（com.atu.weekly-trends-scan）
+    trigger:
+      type: cron
+      cron: "0 12 * * 5"
+    skills: [weekly-trends-scan]
+    inputs:
+      # 竞品账号清单（你后续提供，留空走默认热搜池）
+      # 填法举例：["@duolingo", "@拥抱小英语", "@Brad博士"]
+      competitors: []
+      # 扫描窗口（天）
+      window_days: 14
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: done
+      draft_doc: true             # 输出落飞书 Drafts docx 让 Qihang 周五下午看
+    tags: [phase-2, content-draft, trends-catch]
+
+  - id: weekly_reflection
+    name: 周日复盘
+    enabled: true                 # launchd 每周日 19:00 跑（com.atu.weekly-reflection）
+    trigger:
+      type: cron
+      cron: "0 19 * * 0"
+    skills: [__reflection_internal__]
+    outputs:
+      episodic: true
+      workbench: done
+    tags: [phase-2, reflection]
+
+  - id: monthly_seo
+    name: 月度 SEO 长文
+    enabled: false
+    trigger:
+      type: cron
+      cron: "0 14 1 * *"
+    skills: [SEO 内容优化]
+    outputs:
+      episodic: true
+      workbench: inbox
+    tags: [phase-2]
+
+  - id: seo_site_audit
+    name: 站点 SEO + GEO 诊断
+    enabled: true              # manual 触发：atu run --task seo_site_audit --input target_url=...
+    trigger:
+      type: manual
+    skills: [SEO 内容优化]
+    inputs:
+      target_url: ""           # 通过 --input target_url=https://lemingle.com 注入
+      target_platforms: ["Google", "百度", "知乎"]
+      content_purpose: "获取搜索流量 + 注册转化"
+      extra_directives: |
+        除了传统 SEO 诊断之外，必须**同时输出 GEO（Generative Engine Optimization）分析**：
+        - GEO 是针对 LLM 驱动的搜索（ChatGPT browse / Perplexity / Google AI Overview /
+          Bing Copilot / 豆包搜索 / Kimi 探索版）的优化
+        - 诊断维度：
+          1. AI 搜索可见性（站点内容是否被 LLM 引用 / 引用质量如何）
+          2. 答案性结构（FAQ schema / 直接回答型 H2 / step-by-step 列表）
+          3. 引用友好度（数据点 / 权威来源 / 可量化陈述）
+          4. 多模态信号（图表 / 截图 alt / 视频 transcript）
+          5. 实体识别（结构化数据 / Knowledge Graph 友好的 mention）
+        - 给 7 天 / 30 天 / 90 天 三档行动清单
+    outputs:
+      working_memory: true
+      episodic: true
+      workbench: done
+      draft_doc: true          # 落飞书 Drafts docx
+    tags: [phase-2, seo, geo]

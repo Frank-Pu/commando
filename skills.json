@@ -1,0 +1,38 @@
+{
+  "$schema": "./docs/skills-registry-schema.md",
+  "version": "0.1",
+  "updated": "2026-06-10",
+  "description": "commando Skill registry — 社区贡献的可复用 Skill 索引。新增请发 PR。",
+  "skills": [
+    {
+      "id": "frank-pu/xhs-bilingual-bridge",
+      "title": "小红书 Bilingual Bridge 图文 Skill",
+      "summary": "把 Reddit/HN 等英文社区帖子加工成小红书图文笔记，输出 markdown 摘要 + JSON slide_plan 双协议。",
+      "playbooks": ["growth-partner"],
+      "tags": ["xiaohongshu", "content", "bilingual"],
+      "status": "planned",
+      "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills/xhs-bilingual-bridge",
+      "note": "尚未正式发布到 registry，待 atu 抽象后上架。"
+    },
+    {
+      "id": "frank-pu/reddit-source-mining",
+      "title": "Reddit 信息源 4 维打分 Skill",
+      "summary": "扫指定 subreddit，按 ICP / 钩子 / 红线 / 多样性 4 维打分，输出 score>=4 的候选写入选题池。",
+      "playbooks": ["growth-partner"],
+      "tags": ["reddit", "content", "source-mining"],
+      "status": "planned",
+      "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills/reddit-source-mining",
+      "note": "尚未正式发布到 registry，待 atu 抽象后上架。"
+    },
+    {
+      "id": "frank-pu/marketing-kit",
+      "title": "通用营销 8 件套",
+      "summary": "营销文案 / 营销效果分析 / 竞品追踪 / 社媒热点追踪 / 广告合规检查 / 品牌调性审查 / SEO 内容优化 / 活动策划。",
+      "playbooks": ["growth-partner"],
+      "tags": ["marketing", "kit"],
+      "status": "planned",
+      "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills",
+      "note": "atu 跑了半年的成熟版本，待打包成 commando Skill bundle。"
+    }
+  ]
+}

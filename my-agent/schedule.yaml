@@ -1,0 +1,164 @@
+# Schedule v0.1 — LeMingle 增长合伙人 阿土
+#
+# Pre-PMF 轻节奏：覆盖内容供应链 + 用户研究支持
+# 总审稿耗时预期：~25 min/周 + ~30 min/月（远低于 Qihang 15-30 min/天预算）
+# 余量留给 ad-hoc 对话（聊产品方向 / 增长想法）— 阿土 IM 默认全开
+
+version: "0.1"
+timezone: "Asia/Shanghai"
+
+tasks:
+  # ============================================================
+  # 信息源 · 每日扫描
+  # ============================================================
+  - id: morning_sense
+    name: 每日信息源扫描 + LLM 4 维打分
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 8 * * *"
+    skills: [reddit-source-mining, outlet-rss-scan]
+    inputs:
+      reddit_subs:
+        - r/languagelearning
+        - r/LearnEnglish
+        - r/ChineseLanguage
+        - r/IWantToLearn
+      rss_feeds: []                       # 待填具体 RSS URL（见 connectors.yaml）
+    outputs:
+      workbench_table: 选题池
+      target_status: Inbox
+    tags: [content-pipeline, daily]
+
+  # ============================================================
+  # 小红书初稿 · 周二 + 周五
+  # ============================================================
+  - id: xhs_draft_tue
+    name: 小红书笔记初稿（周二）
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 11 * * 2"
+    skills: [xhs-bilingual-bridge]
+    inputs:
+      pool_source: 选题池
+      formula_hint: balanced              # A/B/C = 50/30/20，runtime 自动选公式
+    outputs:
+      workbench_table: Workbench
+      target_status: WaitingApproval
+      notification: im_card
+    requires_human_approval: true
+    tags: [content-pipeline, weekly]
+
+  - id: xhs_draft_fri
+    name: 小红书笔记初稿（周五）
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 11 * * 5"
+    skills: [xhs-bilingual-bridge]
+    inputs:
+      pool_source: 选题池
+      formula_hint: balanced
+    outputs:
+      workbench_table: Workbench
+      target_status: WaitingApproval
+      notification: im_card
+    requires_human_approval: true
+    tags: [content-pipeline, weekly]
+
+  # ============================================================
+  # 知乎 · 月度 SEO 长文
+  # ============================================================
+  - id: zhihu_monthly_seo
+    name: 知乎 SEO 长文初稿（每月 1 日）
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 9 1 * *"
+    skills: [SEO-content-optimization]
+    inputs:
+      preferred_type:
+        - product-feature
+        - comparison-evaluation
+        - ICP-content
+    outputs:
+      workbench_table: Workbench
+      target_status: WaitingApproval
+      notification: im_card
+    requires_human_approval: true
+    tags: [content-pipeline, monthly]
+
+  # ============================================================
+  # 数据复盘 · 周度 + 周日反思
+  # ============================================================
+  - id: weekly_data_review
+    name: 周度数据复盘 + Stripe 对账
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 16 * * 5"
+    skills: [marketing-effect-analysis]
+    inputs:
+      sources:
+        - xhs_data                        # 商业号 + 个人号
+        - zhihu
+        - stripe
+        - plausible_or_umami              # 归因部署后启用
+      include_attribution: true
+    outputs:
+      workbench_table: KPI看板
+      output_doc: weekly-data-report
+      notification: im_card
+    tags: [reflection, weekly]
+
+  - id: weekly_reflection
+    name: 周日深度反思 + Semantic Memory 更新
+    enabled: true
+    trigger:
+      type: cron
+      cron: "0 19 * * 0"
+    skills: [user-feedback-curator, marketing-effect-analysis]
+    inputs:
+      episodic_window: 7d
+      semantic_topics:
+        - content-formula-performance
+        - icp-refinements
+        - user-quote-vault
+        - channel-conversion-curves
+        - what-doesnt-work
+    outputs:
+      semantic_memory: update
+      output_doc: weekly-reflection
+      notification: im_card
+    tags: [reflection, weekly]
+
+  # ============================================================
+  # 用户研究 · ad-hoc 触发
+  # ============================================================
+  - id: user_call_prep
+    name: 用户访谈前自动 prep
+    enabled: true
+    trigger:
+      type: manual                        # Qihang 通过 IM 触发："我明天要和 X 聊"
+    skills: [user-call-prep]
+    inputs:
+      user_identifier: ""                 # IM / CLI 注入
+    outputs:
+      output_doc: call-prep-<user>
+      notification: im_card
+    tags: [user-research]
+
+  - id: user_call_debrief
+    name: 用户访谈后 debrief + 进 Semantic
+    enabled: true
+    trigger:
+      type: manual
+    skills: [user-call-debrief]
+    inputs:
+      call_notes: ""
+    outputs:
+      semantic_memory: update
+      output_doc: call-debrief-<user>
+      notification: im_card
+    tags: [user-research]
