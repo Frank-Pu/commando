@@ -1,6 +1,6 @@
 ---
 name: user-feedback-curator
-description: 把 IM/邮件/小红书评论/Stripe 备注里收集到的用户反馈和原话，按主题分类沉淀到 Semantic Memory
+description: 把 IM/邮件/小红书评论/支付后台备注里收集到的用户反馈和原话，按主题分类沉淀到 Semantic Memory
 status: draft
 playbooks: [growth-partner]
 capability_requirements:
@@ -14,7 +14,7 @@ capability_requirements:
 
 ## 为什么这个 Skill 关键（pre-PMF 阶段）
 
-律师案例证明：**用户原话 → 产品迭代**是当前最高 ROI 的循环。但用户原话散落在多个渠道（IM / 邮件 / 小红书评论 / Stripe 备注），容易丢。这个 Skill 的工作是**永远不让律师"查检功能"那种话丢失**。
+用户 A 案例证明：**用户原话 → 产品迭代**是当前最高 ROI 的循环。但用户原话散落在多个渠道（IM / 邮件 / 小红书评论 / 支付后台备注），容易丢。这个 Skill 的工作是**永远不让用户 A "某个核心功能"那种话丢失**。
 
 ## 输入契约
 

@@ -19,25 +19,25 @@
 
 ### Phase 1 · Discovery Round 1
 - **产品**：LeMingle = 浏览器插件，自然记住地道表达
-- **当前阶段**：探索 PMF；100 注册 / 2 paid / MAU 难统计
+- **当前阶段**：探索 PMF；数十注册 / 几个 paid / MAU 难统计
 - **历史增长**：小红书 + 知乎 SEO 内容营销
 - **Qihang 自评 ICP**：海外高净值专业人士（律师 / 医生 / 研究员）
-  - 案例 1：美国华人律师（帮中国人打官司）
-  - 案例 2：波兰生物 PhD
+  - 案例 1：用户 A · 海外华人专业服务者（服务跨语言专业场景）
+  - 案例 2：用户 B · 海外华人研究员
   - 自评："与最初设想基本一致"
 - **北极星**：商业化收入 + 付费用户数
 - **CAC**：倾向自然增长 + 内容营销
 - **90 天目标**：20 paid users
 
 ### Phase 1 · Discovery Round 1.5（关键修正）
-- **触发**：Onboarding 主动追问"2 个付费用户从哪里来"
-- **律师案例完整路径**：小红书图文帖子 → 付费 → 深聊 → 提"查检功能"建议 → 驱动多轮迭代
-- **波兰 PhD**：渠道未知，Stripe 后台凭空出现，付 3 个月会员，零互动
+- **触发**：Onboarding 主动追问"几个付费用户从哪里来"
+- **用户 A 案例完整路径**：小红书图文帖子 → 付费 → 深聊 → 提"某个核心功能"建议 → 驱动多轮迭代
+- **用户 B**：渠道未知，支付后台凭空出现，付 3 个月会员，零互动
 - **Onboarding 自我修正**：
-  1. 收回"小红书对你 ICP 无用"的误判（律师反例）
-  2. 重新框架 ICP："海外律师"窄 → "海外华人专业人士"宽（仍在中文社交圈）
+  1. 收回"小红书对你 ICP 无用"的误判（用户 A 反例）
+  2. 重新框架 ICP："用户 A 类"窄 → "海外华人专业人士"宽（仍在中文社交圈）
   3. 重新框架增长循环："批量产内容"错 → "内容钓饵 + 单用户深聊"对
-- **新发现的前置阻塞**：归因黑箱（波兰 PhD 来源未知 = 无可观测性）
+- **新发现的前置阻塞**：归因黑箱（用户 B 来源未知 = 无可观测性）
 
 ### Phase 1 · Discovery Round 2
 - **资源**：Qihang 在大厂做 AI PM，15-30 min/天审稿预算
@@ -71,13 +71,13 @@
 ## 测试中暴露的 commando 设计真实信号（meta）
 
 - **Express 模式 + 用户有真实数据** = 信息密度极高，Onboarding 速度极快
-- **Onboarding 主动追问"2 paid user 从哪来"** = 一个未在 playbook 中明文写的关键提问，但救了整个 ICP 校准。**值得回填 playbook 作为强制 Discovery 追问点。**
+- **Onboarding 主动追问"几个 paid user 从哪来"** = 一个未在 playbook 中明文写的关键提问，但救了整个 ICP 校准。**值得回填 playbook 作为强制 Discovery 追问点。**
 - **Onboarding 自承"我刚才那条判断错了"** = 测试中真发生了，说明 SKILL.md 的人格设定（thinking partner 而非问卷）真的生效
 - **Pre-PMF 状态触发了内容公式偏离 playbook 默认**（B 上调到 30%）= 说明 playbook 不应锁死配比，而应给 Pre-PMF / PMF 后 / 规模化的不同配比建议
 
 ## 给 commando 项目的回流 todo
 
-- [ ] 把"2 paid user 怎么来的"作为 growth-partner playbook Discovery 必问点
+- [ ] 把"几个 paid user 怎么来的"作为 growth-partner playbook Discovery 必问点
 - [ ] playbook 增加"Pre-PMF 配比 vs PMF 后配比"的两套参考
 - [ ] 把归因前置阻塞写进 playbook 作为通用警示（不限增长合伙人）
 - [ ] 本次 Onboarding 完整对话沉淀为 docs/example-onboarding-transcript.md 作教学

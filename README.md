@@ -1,5 +1,7 @@
 # commando
 
+> ⚠️ **0.x · docs-first 阶段** — 设计骨架完整，flagship Onboarding skill 可手动运行；`commando` CLI 实现等社区反馈定优先级。详见 README 末尾"当前阶段坦诚说"。
+
 > 把 AI 角色配置变成一个工程问题，而不是 prompt 玄学。
 >
 > **Runtime 是商品，Configuration 是护城河。**

@@ -93,7 +93,7 @@ tasks:
   # 数据复盘 · 周度 + 周日反思
   # ============================================================
   - id: weekly_data_review
-    name: 周度数据复盘 + Stripe 对账
+    name: 周度数据复盘 + 支付后台对账
     enabled: true
     trigger:
       type: cron
