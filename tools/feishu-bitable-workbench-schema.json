@@ -1,0 +1,42 @@
+{
+  "name": "Workbench",
+  "description": "commando Workbench — unified scheduler. One table, two row types (template + instance).",
+  "fields": [
+    { "field_name": "type",         "type": "single_select", "options": ["template", "instance"] },
+    { "field_name": "task_id",      "type": "text" },
+    { "field_name": "name",         "type": "text" },
+    { "field_name": "trigger_type", "type": "single_select", "options": ["cron", "chain", "manual", "event"] },
+    { "field_name": "cron",         "type": "text" },
+    { "field_name": "skills",       "type": "multi_select" },
+    { "field_name": "status",       "type": "single_select", "options": ["Inbox", "WIP", "WaitingApproval", "Done", "Blocked"] },
+    { "field_name": "started_at",   "type": "date_time" },
+    { "field_name": "ended_at",     "type": "date_time" },
+    { "field_name": "duration_ms",  "type": "number" },
+    { "field_name": "artifact_uri", "type": "url" },
+    { "field_name": "requires_human_approval", "type": "checkbox" },
+    { "field_name": "enabled",      "type": "checkbox" },
+    { "field_name": "notes",        "type": "text" }
+  ],
+  "views": [
+    {
+      "name": "Calendar",
+      "type": "calendar",
+      "config": { "date_field": "started_at", "title_field": "task_id", "color_field": "status" }
+    },
+    {
+      "name": "Kanban",
+      "type": "kanban",
+      "config": { "group_by": "status", "title_field": "task_id", "filter": "type = instance" }
+    },
+    {
+      "name": "Gantt",
+      "type": "gantt",
+      "config": { "start_field": "started_at", "end_field": "ended_at", "title_field": "task_id" }
+    },
+    {
+      "name": "Table",
+      "type": "grid",
+      "config": { "sort": [{ "field": "started_at", "order": "desc" }] }
+    }
+  ]
+}

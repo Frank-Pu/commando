@@ -265,12 +265,8 @@ def build_data(agent_dir: Path) -> dict:
         "this_week": len([t for t in schedule if t.get("enabled", True)]),
     }
 
-    kanban = {
-        "inbox": [{"title": "idiom passively", "meta": "score 4.3"}],
-        "wip": [{"title": "xhs_draft_tue", "meta": "11:02 ago"}],
-        "review": [{"title": "circle back note", "meta": "11:02 done"}],
-        "done": [{"title": "morning_sense", "meta": "08:00 · 12 picked"}],
-    }
+    kanban = _rich_kanban()
+    week = compute_week(schedule, today)
 
     return _attach_skills({
         "agent": agent,
@@ -284,7 +280,59 @@ def build_data(agent_dir: Path) -> dict:
             "tasks": tomorrow_tasks[:4] if tomorrow_tasks else [],
         },
         "kanban": kanban,
+        "week": week,
     }, skills)
+
+
+def compute_week(schedule: list, today: date) -> dict:
+    monday = today - timedelta(days=today.weekday())
+    days = []
+    for i in range(7):
+        d = monday + timedelta(days=i)
+        dow = (d.weekday() + 1) % 7
+        tasks = []
+        for task in schedule:
+            if not task.get("enabled", True):
+                continue
+            trigger = task.get("trigger", {}) or {}
+            cron = trigger.get("cron")
+            if cron and cron_today(cron, dow, d.day):
+                tasks.append({"time": cron_time(cron), "task_id": task["id"]})
+        tasks.sort(key=lambda x: x["time"])
+        days.append({
+            "date": d.isoformat(),
+            "weekday": d.weekday(),
+            "dom": f"{d.month}/{d.day}",
+            "is_today": d == today,
+            "tasks": tasks,
+        })
+    sunday = monday + timedelta(days=6)
+    label = f"{monday.month}/{monday.day} — {sunday.month}/{sunday.day}"
+    return {"start": monday.isoformat(), "label": label, "days": days}
+
+
+def _rich_kanban() -> dict:
+    return {
+        "inbox": [
+            {"title": "How I learn idioms passively", "meta": "score 4.3 · r/languagelearning"},
+            {"title": '"circle back" overuse in tech', "meta": "score 4.1 · The Atlantic"},
+            {"title": "in a nutshell origin", "meta": "score 3.8 · Aeon"},
+            {"title": "海外留学群体痛点访谈", "meta": "score 3.7 · founder note"},
+        ],
+        "wip": [
+            {"title": "xhs_draft_tue", "meta": "started 11:02", "skill": "xhs-bilingual-bridge"},
+        ],
+        "review": [
+            {"title": "xhs_draft_tue · circle back note", "meta": "done 11:02 · 等你审稿",
+             "actionable": True, "artifact_uri": None, "skill": "xhs-bilingual-bridge"},
+        ],
+        "done": [
+            {"title": "morning_sense", "meta": "08:00 · 12 picked", "skill": "reddit-source-mining"},
+            {"title": "user_call_debrief · 用户 A", "meta": "yesterday 16:30", "skill": "user-call-debrief"},
+            {"title": "weekly_reflection", "meta": "Sun 19:00", "skill": "user-feedback-curator"},
+            {"title": "outlet-rss-scan", "meta": "today 08:01", "skill": "outlet-rss-scan"},
+        ],
+    }
 
 
 def _attach_skills(data: dict, skills: list) -> dict:
@@ -344,11 +392,12 @@ def _default_summary(task: dict, status: str) -> str:
 
 
 def _full_mock(agent: dict) -> dict:
+    today = date.today()
     return {
         "agent": agent if agent.get("name") != "agent" else {"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿"},
         "metrics": {"awaiting": 1, "running": 2, "done_today": 4, "this_week": 9},
         "today": {
-            "date": date.today().isoformat(),
+            "date": today.isoformat(),
             "tasks": [
                 {"id": "morning_sense-1", "task_id": "morning_sense",
                  "skills": ["reddit-source-mining", "outlet-rss-scan"],
@@ -367,7 +416,7 @@ def _full_mock(agent: dict) -> dict:
             ],
         },
         "tomorrow": {
-            "date": (date.today() + timedelta(days=1)).isoformat(),
+            "date": (today + timedelta(days=1)).isoformat(),
             "tasks": [
                 {"id": "t1", "task_id": "morning_sense", "time": "08:00"},
                 {"id": "t2", "task_id": "xhs_draft_thu", "time": "11:00"},
@@ -375,12 +424,38 @@ def _full_mock(agent: dict) -> dict:
                 {"id": "t4", "task_id": "daily_journal", "time": "17:00"},
             ],
         },
-        "kanban": {
-            "inbox": [{"title": "idiom passively", "meta": "score 4.3"}],
-            "wip": [{"title": "xhs_draft_tue", "meta": "11:02 ago"}],
-            "review": [{"title": "circle back note", "meta": "11:02 done"}],
-            "done": [{"title": "morning_sense", "meta": "08:00 · 12 picked"}],
-        },
+        "kanban": _rich_kanban(),
+        "week": _mock_week(today),
+    }
+
+
+def _mock_week(today: date) -> dict:
+    monday = today - timedelta(days=today.weekday())
+    by_day = {
+        0: [("08:00", "morning_sense")],
+        1: [("08:00", "morning_sense"), ("11:00", "xhs_draft_tue")],
+        2: [("08:00", "morning_sense"), ("14:30", "user_call_prep")],
+        3: [("08:00", "morning_sense")],
+        4: [("08:00", "morning_sense"), ("11:00", "xhs_draft_fri"), ("16:00", "weekly_data_review")],
+        5: [("08:00", "morning_sense")],
+        6: [("08:00", "morning_sense"), ("19:00", "weekly_reflection")],
+    }
+    days = []
+    for i in range(7):
+        d = monday + timedelta(days=i)
+        tasks = [{"time": t, "task_id": tid} for t, tid in by_day.get(d.weekday(), [])]
+        days.append({
+            "date": d.isoformat(),
+            "weekday": d.weekday(),
+            "dom": f"{d.month}/{d.day}",
+            "is_today": d == today,
+            "tasks": tasks,
+        })
+    sunday = monday + timedelta(days=6)
+    return {
+        "start": monday.isoformat(),
+        "label": f"{monday.month}/{monday.day} — {sunday.month}/{sunday.day}",
+        "days": days,
     }
 
 

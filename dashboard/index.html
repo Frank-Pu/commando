@@ -48,14 +48,15 @@
     <button class="icon-btn" @click="load()" :aria-label="t('refresh')">
       <i class="ti ti-refresh" aria-hidden="true" style="font-size:15px;"></i>
     </button>
+    <button class="icon-btn skills-btn" @click="showSkills = true" :aria-label="t('skills')">
+      <i class="ti ti-bolt" aria-hidden="true" style="font-size:15px;"></i>
+      <span class="skills-btn-count mono" x-text="(data.skills || []).length"></span>
+    </button>
     <button class="icon-btn" :aria-label="t('settings')">
       <i class="ti ti-settings" aria-hidden="true" style="font-size:15px;"></i>
     </button>
   </div>
 </header>
-
-<div class="layout">
-<main style="min-width:0;">
 
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;">
   <div class="metric">
@@ -195,89 +196,174 @@
   </div>
 </section>
 
-<section x-show="activeTab !== 'today'">
+<section x-show="activeTab === 'kanban'">
+  <p class="sec-label">
+    <span x-text="t('kanban')"></span><span class="meta" x-text="t('kanban_subtitle')"></span>
+  </p>
+  <div class="kanban-full">
+    <div class="kanban-col">
+      <div class="kanban-head"><span x-text="t('inbox')"></span><span class="mono" x-text="data.kanban.inbox.length"></span></div>
+      <template x-for="card in data.kanban.inbox" :key="card.title">
+        <div class="kanban-card" :data-bucket="'inbox'">
+          <p class="title" x-text="card.title"></p>
+          <p class="meta" x-text="card.meta"></p>
+          <template x-if="card.skill">
+            <span class="skill" x-text="card.skill"></span>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-head" style="color:var(--amber-800);"><span x-text="t('wip')"></span><span class="mono" x-text="data.kanban.wip.length"></span></div>
+      <template x-for="card in data.kanban.wip" :key="card.title">
+        <div class="kanban-card kanban-card-wip">
+          <p class="title" x-text="card.title"></p>
+          <p class="meta" x-text="card.meta"></p>
+          <template x-if="card.skill">
+            <span class="skill" x-text="card.skill"></span>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-head" style="color:var(--coral-800);"><span x-text="t('review_col')"></span><span class="mono" x-text="data.kanban.review.length"></span></div>
+      <template x-for="card in data.kanban.review" :key="card.title">
+        <div class="kanban-card kanban-card-review">
+          <p class="title" x-text="card.title"></p>
+          <p class="meta" x-text="card.meta"></p>
+          <template x-if="card.actionable">
+            <button class="btn-primary" style="margin-top:8px;font-size:12px;padding:5px 10px;" @click="card.artifact_uri && openArtifact(card)">
+              <span x-text="t('review_btn')"></span>
+              <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:11px;"></i>
+            </button>
+          </template>
+        </div>
+      </template>
+    </div>
+    <div class="kanban-col">
+      <div class="kanban-head" style="color:var(--teal-800);"><span x-text="t('done_col')"></span><span class="mono" x-text="data.kanban.done.length"></span></div>
+      <template x-for="card in data.kanban.done" :key="card.title">
+        <div class="kanban-card kanban-card-done">
+          <p class="title" x-text="card.title"></p>
+          <p class="meta" x-text="card.meta"></p>
+          <template x-if="card.skill">
+            <span class="skill" x-text="card.skill"></span>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</section>
+
+<section x-show="activeTab === 'calendar'">
+  <p class="sec-label">
+    <span x-text="t('calendar')"></span><span class="meta" x-text="data.week ? data.week.label : ''"></span>
+  </p>
+  <div class="week-grid">
+    <template x-for="day in (data.week ? data.week.days : [])" :key="day.date">
+      <div class="day-col" :class="{ 'day-today': day.is_today }">
+        <div class="day-head">
+          <span class="weekday" x-text="weekdayLong(day.weekday)"></span>
+          <span class="dom mono" x-text="day.dom"></span>
+        </div>
+        <template x-if="day.tasks.length === 0">
+          <p class="day-empty">—</p>
+        </template>
+        <template x-for="task in day.tasks" :key="task.task_id + task.time">
+          <div class="day-task">
+            <span class="mono time" x-text="task.time"></span>
+            <span class="tid" x-text="task.task_id"></span>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+  <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;" x-text="t('calendar_note')"></p>
+</section>
+
+<section x-show="activeTab === 'table'">
   <div class="empty-state">
     <i class="ti ti-hourglass" aria-hidden="true" style="font-size:28px;display:block;margin-bottom:10px;"></i>
     <span x-text="t('coming_soon')"></span>
   </div>
 </section>
 
-</main>
-
-<aside class="sidebar">
-  <div class="skills-panel">
-    <div class="skills-head">
-      <p class="title"><i class="ti ti-bolt" aria-hidden="true" style="font-size:14px;vertical-align:-2px;margin-right:4px;"></i><span x-text="t('skills')"></span></p>
-      <span class="count" x-text="(data.skills || []).length"></span>
-    </div>
-
-    <template x-if="(data.skills || []).length === 0">
-      <p style="font-size:12px;color:var(--text-tertiary);margin:0;" x-text="t('no_skills')"></p>
-    </template>
-
-    <template x-if="skillsGrouped().actives.length">
-      <div>
-        <p class="skills-group" x-text="t('skills_active')"></p>
-        <template x-for="s in skillsGrouped().actives" :key="s.id">
-          <div class="skill-row">
-            <p class="name">
-              <span x-text="s.id"></span>
-              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
-              <template x-if="s.requires_human_approval">
-                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
-              </template>
-            </p>
-            <p class="desc" x-text="s.description"></p>
-          </div>
-        </template>
-      </div>
-    </template>
-
-    <template x-if="skillsGrouped().imported.length">
-      <div>
-        <p class="skills-group" x-text="t('skills_imported')"></p>
-        <template x-for="s in skillsGrouped().imported" :key="s.id">
-          <div class="skill-row">
-            <p class="name">
-              <span x-text="s.id"></span>
-              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
-              <template x-if="s.requires_human_approval">
-                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
-              </template>
-            </p>
-            <p class="desc" x-text="s.description"></p>
-          </div>
-        </template>
-      </div>
-    </template>
-
-    <template x-if="skillsGrouped().drafts.length">
-      <div>
-        <p class="skills-group" x-text="t('skills_draft')"></p>
-        <template x-for="s in skillsGrouped().drafts" :key="s.id">
-          <div class="skill-row">
-            <p class="name">
-              <span x-text="s.id"></span>
-              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
-              <template x-if="s.requires_human_approval">
-                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
-              </template>
-            </p>
-            <p class="desc" x-text="s.description"></p>
-          </div>
-        </template>
-      </div>
-    </template>
-  </div>
-</aside>
-
-</div>
-
 <div class="footer">
   <p class="mono" style="margin:0;">./my-agent/</p>
   <p class="mono" style="margin:0;">
     <span x-text="t('read_from')"></span> schedule.yaml + skills/
   </p>
+</div>
+
+<div class="modal-backdrop" x-show="showSkills" @click="showSkills = false" x-cloak></div>
+<div class="modal" x-show="showSkills" x-cloak>
+  <div class="modal-card" @click.stop>
+    <div class="modal-head">
+      <p class="modal-title"><i class="ti ti-bolt" aria-hidden="true" style="font-size:15px;vertical-align:-2px;margin-right:6px;"></i><span x-text="t('skills')"></span> <span class="mono" style="color:var(--text-tertiary);font-weight:400;" x-text="'· ' + (data.skills || []).length"></span></p>
+      <button class="icon-btn" @click="showSkills = false" :aria-label="t('close')">
+        <i class="ti ti-x" aria-hidden="true" style="font-size:15px;"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <template x-if="(data.skills || []).length === 0">
+        <p style="font-size:12px;color:var(--text-tertiary);margin:0;" x-text="t('no_skills')"></p>
+      </template>
+
+      <template x-if="skillsGrouped().actives.length">
+        <div>
+          <p class="skills-group" x-text="t('skills_active')"></p>
+          <template x-for="s in skillsGrouped().actives" :key="s.id">
+            <div class="skill-row">
+              <p class="name">
+                <span x-text="s.id"></span>
+                <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+                <template x-if="s.requires_human_approval">
+                  <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+                </template>
+              </p>
+              <p class="desc" x-text="s.description"></p>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <template x-if="skillsGrouped().imported.length">
+        <div>
+          <p class="skills-group" x-text="t('skills_imported')"></p>
+          <template x-for="s in skillsGrouped().imported" :key="s.id">
+            <div class="skill-row">
+              <p class="name">
+                <span x-text="s.id"></span>
+                <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+                <template x-if="s.requires_human_approval">
+                  <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+                </template>
+              </p>
+              <p class="desc" x-text="s.description"></p>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <template x-if="skillsGrouped().drafts.length">
+        <div>
+          <p class="skills-group" x-text="t('skills_draft')"></p>
+          <template x-for="s in skillsGrouped().drafts" :key="s.id">
+            <div class="skill-row">
+              <p class="name">
+                <span x-text="s.id"></span>
+                <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+                <template x-if="s.requires_human_approval">
+                  <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+                </template>
+              </p>
+              <p class="desc" x-text="s.description"></p>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
 </div>
 
 </div>

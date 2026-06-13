@@ -38,7 +38,11 @@ const I18N = {
     skill_tag_draft: 'draft',
     skill_tag_imported: 'imported',
     skill_tag_approval: 'human-approval',
-    no_skills: 'no skills found in my-agent/skills/'
+    no_skills: 'no skills found in my-agent/skills/',
+    close: 'Close',
+    kanban_subtitle: 'tasks across status',
+    calendar_note: 'Tasks are derived from cron expressions in schedule.yaml; the agent fires them automatically — you only see them here.',
+    weekday_long: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   },
   zh: {
     powered_by: '由 commando 驱动',
@@ -79,7 +83,11 @@ const I18N = {
     skill_tag_draft: 'draft',
     skill_tag_imported: 'imported',
     skill_tag_approval: '需人审',
-    no_skills: 'my-agent/skills/ 下没有发现 Skill'
+    no_skills: 'my-agent/skills/ 下没有发现 Skill',
+    close: '关闭',
+    kanban_subtitle: '按状态切分',
+    calendar_note: '日程是从 schedule.yaml 的 cron 表达式推算的；agent 会自动触发，你只是看到。',
+    weekday_long: ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
   }
 };
 
@@ -107,6 +115,7 @@ function dashboard() {
     lang: detectLang(),
     theme: detectTheme(),
     activeTab: 'today',
+    showSkills: false,
     data: null,
     loading: true,
     error: null,
@@ -221,6 +230,11 @@ function dashboard() {
       if (s.status === 'draft') return this.t('skill_tag_draft');
       if (s.status === 'imported-placeholder' || s.source) return this.t('skill_tag_imported');
       return this.t('skill_tag_active');
+    },
+
+    weekdayLong(idx) {
+      const arr = (I18N[this.lang] && I18N[this.lang].weekday_long) || I18N.en.weekday_long;
+      return arr[idx] || '';
     },
 
     skillsGrouped() {
