@@ -256,28 +256,66 @@
 </section>
 
 <section x-show="activeTab === 'calendar'">
-  <p class="sec-label">
-    <span x-text="t('calendar')"></span><span class="meta" x-text="data.week ? data.week.label : ''"></span>
-  </p>
-  <div class="week-grid">
-    <template x-for="day in (data.week ? data.week.days : [])" :key="day.date">
-      <div class="day-col" :class="{ 'day-today': day.is_today }">
-        <div class="day-head">
-          <span class="weekday" x-text="weekdayLong(day.weekday)"></span>
-          <span class="dom mono" x-text="day.dom"></span>
-        </div>
-        <template x-if="day.tasks.length === 0">
-          <p class="day-empty">—</p>
-        </template>
-        <template x-for="task in day.tasks" :key="task.task_id + task.time">
-          <div class="day-task">
-            <span class="mono time" x-text="task.time"></span>
-            <span class="tid" x-text="task.task_id"></span>
+  <div class="cal-toolbar">
+    <p class="sec-label" style="margin:0;">
+      <span x-text="t('calendar')"></span><span class="meta" x-text="calendarView === 'week' ? (data.week ? data.week.label : '') : monthLabel()"></span>
+    </p>
+    <div class="cal-toggle">
+      <button :class="{ active: calendarView === 'week' }" @click="calendarView='week'" x-text="t('view_week')"></button>
+      <button :class="{ active: calendarView === 'month' }" @click="calendarView='month'" x-text="t('view_month')"></button>
+    </div>
+  </div>
+
+  <div x-show="calendarView === 'week'">
+    <div class="week-grid">
+      <template x-for="day in (data.week ? data.week.days : [])" :key="day.date">
+        <div class="day-col" :class="{ 'day-today': day.is_today }">
+          <div class="day-head">
+            <span class="weekday" x-text="weekdayLong(day.weekday)"></span>
+            <span class="dom mono" x-text="day.dom"></span>
           </div>
+          <template x-if="day.tasks.length === 0">
+            <p class="day-empty">—</p>
+          </template>
+          <template x-for="task in day.tasks" :key="task.task_id + task.time">
+            <div class="day-task">
+              <span class="mono time" x-text="task.time"></span>
+              <span class="tid" x-text="task.task_id"></span>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div x-show="calendarView === 'month'">
+    <div class="month-grid">
+      <div class="month-head-row">
+        <template x-for="(label, i) in weekdayHeaders()" :key="i">
+          <div class="month-head-cell" x-text="label"></div>
         </template>
       </div>
-    </template>
+      <template x-for="(wk, wi) in (data.month ? data.month.weeks : [])" :key="wi">
+        <div class="month-week-row">
+          <template x-for="day in wk.days" :key="day.date">
+            <div class="month-cell" :class="{ 'is-today': day.is_today, 'out-of-month': !day.in_month }">
+              <p class="month-dom" x-text="day.dom"></p>
+              <template x-for="task in day.tasks.slice(0, 2)" :key="task.task_id + task.time">
+                <div class="month-task">
+                  <span class="time" x-text="task.time"></span>
+                  <span class="tid" x-text="task.task_id"></span>
+                </div>
+              </template>
+              <template x-if="day.tasks.length > 2">
+                <p class="month-more" x-text="moreLabel(day.tasks.length - 2)"></p>
+              </template>
+            </div>
+          </template>
+        </div>
+      </template>
+    </div>
   </div>
+
   <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;" x-text="t('calendar_note')"></p>
 </section>
 

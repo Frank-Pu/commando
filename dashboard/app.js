@@ -42,7 +42,10 @@ const I18N = {
     close: 'Close',
     kanban_subtitle: 'tasks across status',
     calendar_note: 'Tasks are derived from cron expressions in schedule.yaml; the agent fires them automatically — you only see them here.',
-    weekday_long: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    weekday_long: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    view_week: 'Week',
+    view_month: 'Month',
+    more_n: '+{n} more'
   },
   zh: {
     powered_by: '由 commando 驱动',
@@ -87,7 +90,10 @@ const I18N = {
     close: '关闭',
     kanban_subtitle: '按状态切分',
     calendar_note: '日程是从 schedule.yaml 的 cron 表达式推算的；agent 会自动触发，你只是看到。',
-    weekday_long: ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    weekday_long: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+    view_week: '周',
+    view_month: '月',
+    more_n: '+{n} 更多'
   }
 };
 
@@ -115,6 +121,7 @@ function dashboard() {
     lang: detectLang(),
     theme: detectTheme(),
     activeTab: 'today',
+    calendarView: 'week',
     showSkills: false,
     data: null,
     loading: true,
@@ -235,6 +242,20 @@ function dashboard() {
     weekdayLong(idx) {
       const arr = (I18N[this.lang] && I18N[this.lang].weekday_long) || I18N.en.weekday_long;
       return arr[idx] || '';
+    },
+
+    weekdayHeaders() {
+      const arr = (I18N[this.lang] && I18N[this.lang].weekday_long) || I18N.en.weekday_long;
+      return arr;
+    },
+
+    monthLabel() {
+      if (!this.data || !this.data.month) return '';
+      return this.lang === 'zh' ? this.data.month.month_zh : this.data.month.label;
+    },
+
+    moreLabel(n) {
+      return this.t('more_n').replace('{n}', n);
     },
 
     skillsGrouped() {

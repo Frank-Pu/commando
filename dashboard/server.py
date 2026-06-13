@@ -267,6 +267,7 @@ def build_data(agent_dir: Path) -> dict:
 
     kanban = _rich_kanban()
     week = compute_week(schedule, today)
+    month = compute_month(schedule, today)
 
     return _attach_skills({
         "agent": agent,
@@ -281,6 +282,7 @@ def build_data(agent_dir: Path) -> dict:
         },
         "kanban": kanban,
         "week": week,
+        "month": month,
     }, skills)
 
 
@@ -426,24 +428,16 @@ def _full_mock(agent: dict) -> dict:
         },
         "kanban": _rich_kanban(),
         "week": _mock_week(today),
+        "month": _mock_month(today),
     }
 
 
 def _mock_week(today: date) -> dict:
     monday = today - timedelta(days=today.weekday())
-    by_day = {
-        0: [("08:00", "morning_sense")],
-        1: [("08:00", "morning_sense"), ("11:00", "xhs_draft_tue")],
-        2: [("08:00", "morning_sense"), ("14:30", "user_call_prep")],
-        3: [("08:00", "morning_sense")],
-        4: [("08:00", "morning_sense"), ("11:00", "xhs_draft_fri"), ("16:00", "weekly_data_review")],
-        5: [("08:00", "morning_sense")],
-        6: [("08:00", "morning_sense"), ("19:00", "weekly_reflection")],
-    }
     days = []
     for i in range(7):
         d = monday + timedelta(days=i)
-        tasks = [{"time": t, "task_id": tid} for t, tid in by_day.get(d.weekday(), [])]
+        tasks = [{"time": t, "task_id": tid} for t, tid in _mock_day_tasks(d.weekday())]
         days.append({
             "date": d.isoformat(),
             "weekday": d.weekday(),
@@ -457,6 +451,69 @@ def _mock_week(today: date) -> dict:
         "label": f"{monday.month}/{monday.day} — {sunday.month}/{sunday.day}",
         "days": days,
     }
+
+
+def _mock_day_tasks(weekday: int) -> list:
+    by_day = {
+        0: [("08:00", "morning_sense")],
+        1: [("08:00", "morning_sense"), ("11:00", "xhs_draft_tue")],
+        2: [("08:00", "morning_sense"), ("14:30", "user_call_prep")],
+        3: [("08:00", "morning_sense")],
+        4: [("08:00", "morning_sense"), ("11:00", "xhs_draft_fri"), ("16:00", "weekly_data_review")],
+        5: [("08:00", "morning_sense")],
+        6: [("08:00", "morning_sense"), ("19:00", "weekly_reflection")],
+    }
+    return by_day.get(weekday, [])
+
+
+def compute_month(schedule: list, today: date) -> dict:
+    first = today.replace(day=1)
+    grid_start = first - timedelta(days=(first.weekday() + 1) % 7)
+    if first.month == 12:
+        next_first = first.replace(year=first.year + 1, month=1)
+    else:
+        next_first = first.replace(month=first.month + 1)
+    weeks = []
+    cur = grid_start
+    for _ in range(6):
+        week_days = []
+        for _ in range(7):
+            dow = (cur.weekday() + 1) % 7
+            in_month = cur.month == today.month and cur.year == today.year
+            tasks = []
+            if schedule:
+                for task in schedule:
+                    if not task.get("enabled", True):
+                        continue
+                    trigger = task.get("trigger", {}) or {}
+                    cron = trigger.get("cron")
+                    if cron and cron_today(cron, dow, cur.day):
+                        tasks.append({"time": cron_time(cron), "task_id": task["id"]})
+                tasks.sort(key=lambda x: x["time"])
+            else:
+                tasks = [{"time": t, "task_id": tid} for t, tid in _mock_day_tasks(cur.weekday())]
+            week_days.append({
+                "date": cur.isoformat(),
+                "dom": cur.day,
+                "in_month": in_month,
+                "is_today": cur == today,
+                "tasks": tasks,
+            })
+            cur = cur + timedelta(days=1)
+        weeks.append({"days": week_days})
+        if cur >= next_first and cur.weekday() == 6:
+            break
+    month_names = ["January", "February", "March", "April", "May", "June",
+                   "July", "August", "September", "October", "November", "December"]
+    return {
+        "label": f"{today.year} {month_names[today.month - 1]}",
+        "month_zh": f"{today.year} 年 {today.month} 月",
+        "weeks": weeks,
+    }
+
+
+def _mock_month(today: date) -> dict:
+    return compute_month([], today)
 
 
 def _fallback_today_picks(schedule: list) -> list:
