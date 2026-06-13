@@ -23,18 +23,39 @@
 <div>
 
 <header style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 18px;">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <div style="position:relative;width:40px;height:40px;">
-      <div style="width:40px;height:40px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;" x-text="data.agent.avatar"></div>
-      <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--teal-400);border:2px solid var(--bg-secondary);"></span>
-    </div>
-    <div>
-      <p style="font-size:15px;font-weight:500;margin:0;" x-text="data.agent.name"></p>
-      <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">
-        <span x-text="data.agent.subtitle"></span>
-        <span style="color:var(--text-tertiary);"> · </span>
-        <span x-text="t('powered_by')" style="color:var(--text-tertiary);"></span>
-      </p>
+  <div class="agent-switcher" @click.outside="agentMenuOpen = false">
+    <button class="agent-switcher-trigger" @click="agentMenuOpen = !agentMenuOpen" :aria-label="t('switch_agent')">
+      <div style="position:relative;width:40px;height:40px;flex-shrink:0;">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;" x-text="data.agent.avatar"></div>
+        <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--teal-400);border:2px solid var(--bg-secondary);"></span>
+      </div>
+      <div style="min-width:0;">
+        <p style="font-size:15px;font-weight:500;margin:0;" x-text="data.agent.name"></p>
+        <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">
+          <span x-text="data.agent.subtitle"></span>
+          <span style="color:var(--text-tertiary);"> · </span>
+          <span x-text="t('powered_by')" style="color:var(--text-tertiary);"></span>
+        </p>
+      </div>
+      <i class="ti ti-chevron-down chev" aria-hidden="true" style="font-size:14px;" x-show="agents.length > 1"></i>
+    </button>
+
+    <div class="agent-menu" x-show="agentMenuOpen" x-cloak x-transition.opacity>
+      <template x-for="a in agents" :key="a.id">
+        <button class="agent-menu-item" :class="{ active: a.id === activeAgentId }" @click="switchAgent(a.id)">
+          <span class="agent-menu-avatar" x-text="a.avatar"></span>
+          <span style="flex:1;min-width:0;">
+            <span style="display:block;font-size:13px;font-weight:500;" x-text="a.name"></span>
+            <span class="meta" x-text="a.subtitle"></span>
+          </span>
+          <i class="ti ti-check" aria-hidden="true" style="font-size:14px;" x-show="a.id === activeAgentId"></i>
+        </button>
+      </template>
+      <div class="agent-menu-divider"></div>
+      <div class="agent-menu-add">
+        <i class="ti ti-plus" aria-hidden="true" style="font-size:13px;"></i>
+        <span>commando onboard · 加一个 agent</span>
+      </div>
     </div>
   </div>
 
@@ -90,9 +111,9 @@
     <i class="ti ti-calendar" aria-hidden="true" style="font-size:14px;"></i>
     <span x-text="t('calendar')"></span>
   </button>
-  <button class="tab" :class="{'tab-active': activeTab === 'table'}" @click="activeTab='table'">
-    <i class="ti ti-table" aria-hidden="true" style="font-size:14px;"></i>
-    <span x-text="t('table')"></span>
+  <button class="tab" :class="{'tab-active': activeTab === 'knowledge'}" @click="activeTab='knowledge'">
+    <i class="ti ti-books" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('knowledge')"></span>
   </button>
 </nav>
 
@@ -319,11 +340,41 @@
   <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;" x-text="t('calendar_note')"></p>
 </section>
 
-<section x-show="activeTab === 'table'">
-  <div class="empty-state">
-    <i class="ti ti-hourglass" aria-hidden="true" style="font-size:28px;display:block;margin-bottom:10px;"></i>
-    <span x-text="t('coming_soon')"></span>
+<section x-show="activeTab === 'knowledge'">
+  <p class="sec-label">
+    <span x-text="t('knowledge')"></span><span class="meta" x-text="t('knowledge_subtitle')"></span>
+  </p>
+  <div class="knowledge-grid">
+    <template x-for="cat in (data.knowledge || [])" :key="cat.id">
+      <div class="k-card">
+        <div class="k-card-head">
+          <div style="min-width:0;">
+            <p class="k-card-name">
+              <span class="icon"><i class="ti" :class="cat.icon" aria-hidden="true" style="font-size:14px;"></i></span>
+              <span x-text="knowledgeCategoryName(cat)"></span>
+              <span class="mono" style="color:var(--text-tertiary);font-weight:400;font-size:12px;" x-text="itemsTotalLabel(cat.count)"></span>
+            </p>
+            <p class="k-card-meta" x-text="cat.backend"></p>
+          </div>
+          <button class="k-card-open" @click="cat.backend_url && openLink(cat.backend_url)">
+            <span x-text="t('open_all')"></span>
+            <i class="ti ti-external-link" aria-hidden="true" style="font-size:11px;"></i>
+          </button>
+        </div>
+        <div>
+          <template x-for="it in cat.items" :key="it.title">
+            <a class="k-item" :href="it.url" target="_blank" rel="noopener" style="text-decoration:none;cursor:pointer;">
+              <p class="title" x-text="it.title"></p>
+              <span class="updated" x-text="knowledgeItemUpdated(it)"></span>
+            </a>
+          </template>
+        </div>
+      </div>
+    </template>
   </div>
+  <p style="font-size:11px;color:var(--text-tertiary);margin:18px 0 0;font-style:italic;">
+    📚 这是 <span x-text="data.agent.name"></span> 在飞书 / Notion / 本地 semantic memory 里的产物——点开看真实内容。切换 agent 顶部头像。
+  </p>
 </section>
 
 <div class="footer">

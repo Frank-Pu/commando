@@ -39,6 +39,12 @@ const I18N = {
     skill_tag_imported: 'imported',
     skill_tag_approval: 'human-approval',
     no_skills: 'no skills found in my-agent/skills/',
+    knowledge: 'Knowledge',
+    knowledge_subtitle: "this agent's plans / drafts / data / user quotes",
+    open_in: 'open in {backend}',
+    open_all: 'open all',
+    switch_agent: 'switch agent',
+    items_total: '· {n} items',
     close: 'Close',
     kanban_subtitle: 'tasks across status',
     calendar_note: 'Tasks are derived from cron expressions in schedule.yaml; the agent fires them automatically — you only see them here.',
@@ -87,6 +93,12 @@ const I18N = {
     skill_tag_imported: 'imported',
     skill_tag_approval: '需人审',
     no_skills: 'my-agent/skills/ 下没有发现 Skill',
+    knowledge: '知识库',
+    knowledge_subtitle: '此 agent 记录的方案 / 文案 / 数据 / 用户原话',
+    open_in: '在 {backend} 打开',
+    open_all: '全部打开',
+    switch_agent: '切换 agent',
+    items_total: '· {n} 条',
     close: '关闭',
     kanban_subtitle: '按状态切分',
     calendar_note: '日程是从 schedule.yaml 的 cron 表达式推算的；agent 会自动触发，你只是看到。',
@@ -123,20 +135,46 @@ function dashboard() {
     activeTab: 'today',
     calendarView: 'week',
     showSkills: false,
+    agents: [],
+    activeAgentId: null,
+    agentMenuOpen: false,
     data: null,
     loading: true,
     error: null,
 
     async init() {
       applyTheme(this.theme);
+      await this.loadAgents();
       await this.load();
+    },
+
+    async loadAgents() {
+      try {
+        const r = await fetch('/api/agents');
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        this.agents = j.agents || [];
+        const saved = localStorage.getItem('commando.activeAgent');
+        if (saved && this.agents.some(a => a.id === saved)) {
+          this.activeAgentId = saved;
+        } else {
+          this.activeAgentId = j.active_id || (this.agents[0] && this.agents[0].id);
+        }
+      } catch (e) {
+        this.agents = [
+          {id: 'atu', name: '阿土', subtitle: 'LeMingle 增长合伙人', avatar: '阿'},
+          {id: 'caiwa', name: '财娃', subtitle: '投研助手 · A 股 + 港股', avatar: '财'},
+        ];
+        this.activeAgentId = 'atu';
+      }
     },
 
     async load() {
       this.loading = true;
       this.error = null;
       try {
-        const r = await fetch('/api/data');
+        const url = this.activeAgentId ? '/api/data?agent=' + encodeURIComponent(this.activeAgentId) : '/api/data';
+        const r = await fetch(url);
         if (!r.ok) throw new Error('HTTP ' + r.status);
         this.data = await r.json();
       } catch (e) {
@@ -144,6 +182,18 @@ function dashboard() {
       } finally {
         this.loading = false;
       }
+    },
+
+    async switchAgent(id) {
+      if (id === this.activeAgentId) {
+        this.agentMenuOpen = false;
+        return;
+      }
+      this.activeAgentId = id;
+      localStorage.setItem('commando.activeAgent', id);
+      this.agentMenuOpen = false;
+      this.activeTab = 'today';
+      await this.load();
     },
 
     t(key) {
@@ -227,6 +277,11 @@ function dashboard() {
       }
     },
 
+    openLink(url) {
+      if (!url || url === '#') return;
+      window.open(url, '_blank', 'noopener');
+    },
+
     skillTagClass(s) {
       if (s.status === 'draft') return 'skill-tag skill-tag-draft';
       if (s.status === 'imported-placeholder' || s.source) return 'skill-tag skill-tag-imported';
@@ -256,6 +311,22 @@ function dashboard() {
 
     moreLabel(n) {
       return this.t('more_n').replace('{n}', n);
+    },
+
+    knowledgeCategoryName(c) {
+      return this.lang === 'zh' ? (c.name_zh || c.name_en) : (c.name_en || c.name_zh);
+    },
+
+    knowledgeItemUpdated(it) {
+      return this.lang === 'zh' ? (it.updated_zh || it.updated_en) : (it.updated_en || it.updated_zh);
+    },
+
+    openInLabel(backend) {
+      return this.t('open_in').replace('{backend}', backend);
+    },
+
+    itemsTotalLabel(n) {
+      return this.t('items_total').replace('{n}', n);
     },
 
     skillsGrouped() {

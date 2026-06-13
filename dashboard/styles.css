@@ -104,6 +104,100 @@ button { font-family: inherit; cursor: pointer; }
   gap: 5px;
 }
 
+.agent-switcher {
+  position: relative;
+}
+
+.agent-switcher-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: 0.5px solid transparent;
+  border-radius: 10px;
+  padding: 5px 12px 5px 6px;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.agent-switcher-trigger:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-tertiary);
+}
+
+.agent-switcher-trigger .chev {
+  color: var(--text-tertiary);
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+.agent-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-tertiary);
+  border-radius: 12px;
+  padding: 6px;
+  min-width: 280px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.agent-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.agent-menu-item:hover { background: var(--bg-tertiary); }
+.agent-menu-item.active { background: var(--teal-50); color: var(--teal-800); }
+
+.agent-menu-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--teal-50);
+  color: var(--teal-800);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.agent-menu-item .meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.agent-menu-item.active .meta { color: var(--teal-800); opacity: 0.7; }
+
+.agent-menu-divider {
+  border-top: 0.5px solid var(--border-tertiary);
+  margin: 4px 0;
+}
+
+.agent-menu-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
 .skills-btn-count {
   font-size: 11px;
   color: var(--text-tertiary);
@@ -495,6 +589,104 @@ button { font-family: inherit; cursor: pointer; }
   font-style: italic;
   margin: 2px 0 0;
   padding: 0 4px;
+}
+
+.knowledge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 1024px) {
+  .knowledge-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.k-card {
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-tertiary);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.k-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.k-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.k-card-name .icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--teal-50);
+  color: var(--teal-800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.k-card-meta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin: 4px 0 0;
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+.k-card-open {
+  font-size: 11px;
+  color: var(--coral-600);
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.k-card-open:hover { background: var(--coral-50); color: var(--coral-800); }
+
+.k-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 0.5px solid var(--border-tertiary);
+}
+
+.k-item:first-of-type { border-top: none; }
+
+.k-item .title {
+  font-size: 12.5px;
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.k-item:hover .title { color: var(--teal-800); }
+
+.k-item .updated {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: "SF Mono", Menlo, monospace;
+  flex-shrink: 0;
 }
 
 .card {

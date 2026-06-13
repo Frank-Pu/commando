@@ -192,6 +192,34 @@ def load_mock_instances() -> list:
     return instances
 
 
+def discover_agents(root: Optional[Path], primary_dir: Path, multi_agent_mode: bool) -> list:
+    if multi_agent_mode and root and root.exists() and root.is_dir():
+        agents = []
+        for sub in sorted(root.iterdir()):
+            if sub.is_dir() and (sub / "charter.md").exists() and (sub / "schedule.yaml").exists():
+                a = load_agent(sub)
+                a["id"] = sub.name
+                a["dir"] = str(sub)
+                agents.append(a)
+        if agents:
+            return agents
+    primary = {"id": "atu", "dir": str(primary_dir)}
+    if primary_dir.exists() and (primary_dir / "charter.md").exists():
+        primary.update(load_agent(primary_dir))
+    else:
+        primary.update({"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿"})
+    secondary = {"id": "caiwa", "name": "财娃", "subtitle": "投研助手 · A 股 + 港股",
+                 "avatar": "财", "dir": "(mock — v0.1 demo)"}
+    return [primary, secondary]
+
+
+def _mock_agents_meta() -> list:
+    return [
+        {"id": "atu", "name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿", "dir": "./my-agent"},
+        {"id": "caiwa", "name": "财娃", "subtitle": "投研助手 · A 股 + 港股", "avatar": "财", "dir": "./agents/caiwa"},
+    ]
+
+
 def build_data(agent_dir: Path) -> dict:
     agent = load_agent(agent_dir)
     schedule = load_schedule(agent_dir)
@@ -283,7 +311,144 @@ def build_data(agent_dir: Path) -> dict:
         "kanban": kanban,
         "week": week,
         "month": month,
+        "knowledge": _knowledge_growth_partner(),
     }, skills)
+
+
+def _knowledge_growth_partner() -> list:
+    return [
+        {
+            "id": "drafts",
+            "name_zh": "内容草稿",
+            "name_en": "Content drafts",
+            "icon": "ti-file-text",
+            "backend": "Feishu Wiki · 📝 内容初稿",
+            "backend_url": "https://feishu.cn/wiki/...",
+            "count": 14,
+            "items": [
+                {"title": "xhs_draft_tue · circle back", "updated_zh": "2 小时前", "updated_en": "2 hours ago", "url": "#"},
+                {"title": "xhs_draft_fri · in a nutshell", "updated_zh": "昨天", "updated_en": "yesterday", "url": "#"},
+                {"title": "zhihu_monthly_seo · LeMingle vs Trancy", "updated_zh": "上周一", "updated_en": "last Mon", "url": "#"},
+            ],
+        },
+        {
+            "id": "research",
+            "name_zh": "用户研究",
+            "name_en": "User research",
+            "icon": "ti-users",
+            "backend": "Feishu Wiki · 用户访谈",
+            "backend_url": "https://feishu.cn/wiki/...",
+            "count": 6,
+            "items": [
+                {"title": "call-debrief · 用户 A (美国华人律师)", "updated_zh": "前天", "updated_en": "2 days ago", "url": "#"},
+                {"title": "call-prep · 用户 C (海外医生)", "updated_zh": "草稿", "updated_en": "draft", "url": "#"},
+                {"title": "user-quote-vault.md", "updated_zh": "周日", "updated_en": "Sunday", "url": "#"},
+            ],
+        },
+        {
+            "id": "reflection",
+            "name_zh": "数据复盘",
+            "name_en": "Data review",
+            "icon": "ti-chart-line",
+            "backend": "Feishu Wiki · 复盘报告",
+            "backend_url": "https://feishu.cn/wiki/...",
+            "count": 9,
+            "items": [
+                {"title": "weekly-reflection · 2026-W24", "updated_zh": "本周日", "updated_en": "this Sun", "url": "#"},
+                {"title": "weekly-data-report · 2026-W23", "updated_zh": "上周五", "updated_en": "last Fri", "url": "#"},
+                {"title": "channel-conversion-curves.md", "updated_zh": "周日反思更新", "updated_en": "updated Sun", "url": "#"},
+            ],
+        },
+        {
+            "id": "pool",
+            "name_zh": "选题池",
+            "name_en": "Topic pool",
+            "icon": "ti-database",
+            "backend": "Feishu Bitable · 选题池",
+            "backend_url": "https://feishu.cn/base/...",
+            "count": 42,
+            "items": [
+                {"title": "How I learn idioms passively · 4.3", "updated_zh": "今早 08:01", "updated_en": "08:01 today", "url": "#"},
+                {"title": '"circle back" overuse in tech · 4.1', "updated_zh": "今早 08:01", "updated_en": "08:01 today", "url": "#"},
+                {"title": "in a nutshell origin · 3.8", "updated_zh": "今早 08:01", "updated_en": "08:01 today", "url": "#"},
+            ],
+        },
+        {
+            "id": "semantic",
+            "name_zh": "Semantic Memory",
+            "name_en": "Semantic memory",
+            "icon": "ti-brain",
+            "backend": "Local · semantic/*.md",
+            "backend_url": "#",
+            "count": 5,
+            "items": [
+                {"title": "content-formula-performance.md", "updated_zh": "上周更新", "updated_en": "last week", "url": "#"},
+                {"title": "icp-refinements.md", "updated_zh": "2 周前", "updated_en": "2 weeks ago", "url": "#"},
+                {"title": "what-doesnt-work.md", "updated_zh": "3 周前", "updated_en": "3 weeks ago", "url": "#"},
+            ],
+        },
+    ]
+
+
+def _knowledge_finance_analyst() -> list:
+    return [
+        {
+            "id": "company-profile",
+            "name_zh": "公司画像",
+            "name_en": "Company profiles",
+            "icon": "ti-building-skyscraper",
+            "backend": "Feishu Wiki · 公司库",
+            "backend_url": "#",
+            "count": 87,
+            "items": [
+                {"title": "比亚迪 (002594) · 25Q4 update", "updated_zh": "今早", "updated_en": "today", "url": "#"},
+                {"title": "Pinduoduo (PDD) · earnings deep-dive", "updated_zh": "昨天", "updated_en": "yesterday", "url": "#"},
+                {"title": "Nvidia (NVDA) · valuation refresh", "updated_zh": "前天", "updated_en": "2 days ago", "url": "#"},
+            ],
+        },
+        {
+            "id": "sector",
+            "name_zh": "行业研报",
+            "name_en": "Sector research",
+            "icon": "ti-chart-pie",
+            "backend": "Feishu Wiki · 行业",
+            "backend_url": "#",
+            "count": 23,
+            "items": [
+                {"title": "新能源车产业链 · 2026 H1", "updated_zh": "本周三", "updated_en": "Wed", "url": "#"},
+                {"title": "半导体设备 · 国产替代追踪", "updated_zh": "上周", "updated_en": "last week", "url": "#"},
+                {"title": "AI infra 海外巨头季度对比", "updated_zh": "上周", "updated_en": "last week", "url": "#"},
+            ],
+        },
+        {
+            "id": "valuation",
+            "name_zh": "估值模型",
+            "name_en": "Valuation models",
+            "icon": "ti-calculator",
+            "backend": "Feishu Sheets · DCF 模型库",
+            "backend_url": "#",
+            "count": 35,
+            "items": [
+                {"title": "比亚迪 DCF (2026-2030)", "updated_zh": "今早", "updated_en": "today", "url": "#"},
+                {"title": "宁德时代 multi-stage DCF", "updated_zh": "昨天", "updated_en": "yesterday", "url": "#"},
+                {"title": "可比公司估值矩阵 · 新能源", "updated_zh": "本周二", "updated_en": "Tue", "url": "#"},
+            ],
+        },
+        {
+            "id": "earnings",
+            "name_zh": "财报追踪",
+            "name_en": "Earnings tracker",
+            "icon": "ti-calendar-event",
+            "backend": "Feishu Bitable · 财报日历",
+            "backend_url": "#",
+            "count": 18,
+            "items": [
+                {"title": "本周财报 · 6 家科技股", "updated_zh": "周一更新", "updated_en": "Mon update", "url": "#"},
+                {"title": "下周财报预告 · 关注 8 家", "updated_zh": "今天", "updated_en": "today", "url": "#"},
+                {"title": "上季度业绩 vs 预期偏差汇总", "updated_zh": "本周三", "updated_en": "Wed", "url": "#"},
+            ],
+        },
+    ]
 
 
 def compute_week(schedule: list, today: date) -> dict:
@@ -429,7 +594,77 @@ def _full_mock(agent: dict) -> dict:
         "kanban": _rich_kanban(),
         "week": _mock_week(today),
         "month": _mock_month(today),
+        "knowledge": _knowledge_growth_partner(),
     }
+
+
+def build_mock_for_agent(agent_id: str) -> dict:
+    today = date.today()
+    if agent_id == "caiwa":
+        agent = {"name": "财娃", "subtitle": "投研助手 · A 股 + 港股", "avatar": "财"}
+        return {
+            "agent": agent,
+            "metrics": {"awaiting": 2, "running": 1, "done_today": 6, "this_week": 14},
+            "today": {"date": today.isoformat(), "tasks": [
+                {"id": "ms-1", "task_id": "market_open_brief", "skills": ["a-share-scan", "us-overnight-recap"],
+                 "status": "Done", "summary": "09:15 · briefed 12 holdings · 87s", "artifact_uri": None},
+                {"id": "ec-1", "task_id": "earnings_check", "skills": ["earnings-fetcher"],
+                 "status": "WaitingApproval", "summary": "比亚迪 25Q4 · 关键差异已标注 · 等你 review",
+                 "artifact_uri": None},
+                {"id": "vw-1", "task_id": "valuation_watch", "skills": ["valuation-model"],
+                 "status": "Manual", "summary": "Manual · 你想看哪只在 IM 说", "artifact_uri": None},
+            ]},
+            "tomorrow": {"date": (today + timedelta(days=1)).isoformat(), "tasks": [
+                {"id": "t1", "task_id": "market_open_brief", "time": "09:15"},
+                {"id": "t2", "task_id": "sector_rotation_scan", "time": "10:30"},
+                {"id": "t3", "task_id": "earnings_check", "time": "14:00"},
+                {"id": "t4", "task_id": "daily_journal", "time": "16:30"},
+            ]},
+            "kanban": {
+                "inbox": [
+                    {"title": "AI infra Q1 catch-up", "meta": "tag: macro"},
+                    {"title": "Pinduoduo Temu margin debate", "meta": "tag: deep-dive"},
+                ],
+                "wip": [{"title": "earnings_check · BYD", "meta": "started 13:55"}],
+                "review": [{"title": "earnings_check · BYD 25Q4 brief", "meta": "等你审稿"}],
+                "done": [
+                    {"title": "market_open_brief", "meta": "09:15 · 12 holdings"},
+                    {"title": "us-overnight-recap", "meta": "07:30 · NVDA +2.1%"},
+                    {"title": "valuation_watch · CATL", "meta": "yesterday"},
+                ],
+            },
+            "week": _mock_week(today),
+            "month": _mock_month(today),
+            "knowledge": _knowledge_finance_analyst(),
+            "skills": _mock_skills_finance(),
+        }
+    # default: atu / growth-partner
+    return _full_mock({"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿"})
+
+
+def _mock_skills_finance() -> list:
+    return [
+        {"id": "a-share-scan", "dir": "a-share-scan",
+         "description": "盘前扫 A 股核心持仓 + 板块异动 + 沪深通净流向",
+         "status": "imported-placeholder", "playbooks": ["finance-analyst"], "requires_human_approval": False,
+         "source": "@frank-pu/a-share-scan@planned"},
+        {"id": "us-overnight-recap", "dir": "us-overnight-recap",
+         "description": "美股隔夜要闻 + 中概股 ADR 表现 + 美联储动向",
+         "status": "imported-placeholder", "playbooks": ["finance-analyst"], "requires_human_approval": False,
+         "source": "@frank-pu/us-overnight-recap@planned"},
+        {"id": "earnings-fetcher", "dir": "earnings-fetcher",
+         "description": "财报发布日自动拉关键数据 + 与一致预期对比 + 写差异分析草稿",
+         "status": "imported-placeholder", "playbooks": ["finance-analyst"], "requires_human_approval": True,
+         "source": "@frank-pu/earnings-fetcher@planned"},
+        {"id": "valuation-model", "dir": "valuation-model",
+         "description": "DCF / 可比公司多模型估值 · 输出敏感性矩阵",
+         "status": "draft", "playbooks": ["finance-analyst"], "requires_human_approval": True,
+         "source": None},
+        {"id": "sector-rotation-scan", "dir": "sector-rotation-scan",
+         "description": "每日扫 28 个申万一级行业资金流 + 涨跌幅 · 标异常",
+         "status": "draft", "playbooks": ["finance-analyst"], "requires_human_approval": False,
+         "source": None},
+    ]
 
 
 def _mock_week(today: date) -> dict:
@@ -548,11 +783,18 @@ def open_local_path(uri: str) -> bool:
         return False
 
 
-def make_handler(agent_dir: Path):
+def make_handler(agent_dir: Path, agents_root: Optional[Path]):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             parsed = urllib.parse.urlparse(self.path)
+            if parsed.path == "/api/agents":
+                agents = discover_agents(agents_root, agent_dir, multi_agent_mode=agents_root is not None)
+                return self._json({"agents": agents, "active_id": agents[0]["id"] if agents else None})
             if parsed.path == "/api/data":
+                qs = urllib.parse.parse_qs(parsed.query)
+                agent_id = (qs.get("agent") or [""])[0]
+                if agent_id and agent_id != "atu":
+                    return self._json(build_mock_for_agent(agent_id))
                 return self._json(build_data(agent_dir))
             if parsed.path == "/api/open":
                 qs = urllib.parse.parse_qs(parsed.query)
@@ -613,16 +855,19 @@ def make_handler(agent_dir: Path):
 def main():
     p = argparse.ArgumentParser(prog="commando-dashboard")
     p.add_argument("--agent-dir", default=str(HERE.parent / "my-agent"),
-                   help="Path to Configuration directory (default: ../my-agent/)")
+                   help="Path to active Configuration directory")
+    p.add_argument("--agents-root", default=None,
+                   help="Optional: root dir holding multiple agent subdirs (multi-agent mode)")
     p.add_argument("--port", type=int, default=7878)
     p.add_argument("--no-browser", action="store_true")
     args = p.parse_args()
 
     agent_dir = Path(args.agent_dir).resolve()
+    agents_root = Path(args.agents_root).resolve() if args.agents_root else None
     if not agent_dir.exists():
         sys.stderr.write(f"warning: agent dir {agent_dir} does not exist — using mock data only\n")
 
-    handler = make_handler(agent_dir)
+    handler = make_handler(agent_dir, agents_root)
     server = HTTPServer(("127.0.0.1", args.port), handler)
     url = f"http://127.0.0.1:{args.port}"
     sys.stderr.write(f"commando dashboard running at {url}\n")
