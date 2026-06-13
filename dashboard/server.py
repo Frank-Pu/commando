@@ -80,6 +80,57 @@ def load_schedule(agent_dir: Path) -> list:
     return data.get("tasks", []) if isinstance(data, dict) else []
 
 
+def parse_frontmatter(path: Path) -> dict:
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return {}
+    if not text.startswith("---"):
+        return {}
+    end = text.find("\n---", 3)
+    if end == -1:
+        return {}
+    block = text[3:end].strip()
+    try:
+        import yaml  # type: ignore
+        loaded = yaml.safe_load(block) or {}
+        return loaded if isinstance(loaded, dict) else {}
+    except Exception:
+        result = {}
+        for line in block.splitlines():
+            if ":" in line and not line.startswith(" "):
+                k, v = line.split(":", 1)
+                result[k.strip()] = v.strip().strip('"').strip("'")
+        return result
+
+
+def load_skills(agent_dir: Path) -> list:
+    skills_dir = agent_dir / "skills"
+    if not skills_dir.exists() or not skills_dir.is_dir():
+        return []
+    skills = []
+    for sub in sorted(skills_dir.iterdir()):
+        if not sub.is_dir():
+            continue
+        md = sub / "SKILL.md"
+        if not md.exists():
+            continue
+        fm = parse_frontmatter(md)
+        desc = fm.get("description") or ""
+        if isinstance(desc, str):
+            desc = " ".join(desc.split())
+        skills.append({
+            "id": fm.get("name", sub.name),
+            "dir": sub.name,
+            "description": desc[:160] + ("…" if len(desc) > 160 else ""),
+            "source": fm.get("source"),
+            "status": fm.get("status", "active"),
+            "playbooks": fm.get("playbooks") or [],
+            "requires_human_approval": bool(fm.get("requires_human_approval")),
+        })
+    return skills
+
+
 def cron_today(cron: str, today_dow: int, today_dom: int) -> bool:
     """Best-effort match: is this cron firing today? Supports '0 8 * * *' style."""
     if not cron:
@@ -145,13 +196,14 @@ def build_data(agent_dir: Path) -> dict:
     agent = load_agent(agent_dir)
     schedule = load_schedule(agent_dir)
     instances = load_mock_instances()
+    skills = load_skills(agent_dir)
 
     runtime_data = agent_dir / "workbench" / "instances.jsonl"
     if not runtime_data.exists():
-        return _full_mock(agent)
+        return _attach_skills(_full_mock(agent), skills)
 
     if not schedule:
-        return _full_mock(agent)
+        return _attach_skills(_full_mock(agent), skills)
 
     today = date.today()
     tomorrow = today + timedelta(days=1)
@@ -220,7 +272,7 @@ def build_data(agent_dir: Path) -> dict:
         "done": [{"title": "morning_sense", "meta": "08:00 · 12 picked"}],
     }
 
-    return {
+    return _attach_skills({
         "agent": agent,
         "metrics": metrics,
         "today": {
@@ -232,7 +284,41 @@ def build_data(agent_dir: Path) -> dict:
             "tasks": tomorrow_tasks[:4] if tomorrow_tasks else [],
         },
         "kanban": kanban,
-    }
+    }, skills)
+
+
+def _attach_skills(data: dict, skills: list) -> dict:
+    data["skills"] = skills or _mock_skills()
+    return data
+
+
+def _mock_skills() -> list:
+    return [
+        {"id": "reddit-source-mining", "dir": "reddit-source-mining",
+         "description": "扫指定 subreddit 拉 top 候选帖 + LLM 4 维打分，写入选题池",
+         "source": "@frank-pu/reddit-source-mining@planned",
+         "status": "imported-placeholder", "playbooks": ["growth-partner"], "requires_human_approval": False},
+        {"id": "xhs-bilingual-bridge", "dir": "xhs-bilingual-bridge",
+         "description": "把 Reddit/HN 优质讨论加工成小红书 Bilingual Bridge 图文",
+         "source": "@frank-pu/xhs-bilingual-bridge@planned",
+         "status": "imported-placeholder", "playbooks": ["growth-partner"], "requires_human_approval": True},
+        {"id": "marketing-kit", "dir": "marketing-kit",
+         "description": "8 件套通用营销 Skill bundle（营销文案 / 效果分析 / 竞品追踪 等）",
+         "source": "@frank-pu/marketing-kit@planned",
+         "status": "imported-placeholder", "playbooks": ["growth-partner"], "requires_human_approval": False},
+        {"id": "outlet-rss-scan", "dir": "outlet-rss-scan",
+         "description": "每日扫外刊 RSS，提取地道表达密度高的片段进选题池",
+         "source": None, "status": "draft", "playbooks": ["growth-partner"], "requires_human_approval": False},
+        {"id": "user-feedback-curator", "dir": "user-feedback-curator",
+         "description": "把 IM/邮件/小红书评论里的用户反馈系统化沉淀到 Semantic Memory",
+         "source": None, "status": "draft", "playbooks": ["growth-partner"], "requires_human_approval": False},
+        {"id": "user-call-prep", "dir": "user-call-prep",
+         "description": "用户访谈前 prep — 读 LinkedIn / 历史交互 / Semantic 起草 5 问",
+         "source": None, "status": "draft", "playbooks": ["growth-partner"], "requires_human_approval": False},
+        {"id": "user-call-debrief", "dir": "user-call-debrief",
+         "description": "用户访谈后 debrief — 把口述内容提炼成 insights，进 Semantic Memory",
+         "source": None, "status": "draft", "playbooks": ["growth-partner"], "requires_human_approval": False},
+    ]
 
 
 def _format_task(task: dict, instance: Optional[dict]) -> dict:

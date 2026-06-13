@@ -29,7 +29,16 @@ const I18N = {
     sec: 's',
     candidates: 'candidates',
     ran_at: 'ran at',
-    score: 'score'
+    score: 'score',
+    skills: 'Skills',
+    skills_active: 'Active',
+    skills_draft: 'Draft',
+    skills_imported: 'Imported',
+    skill_tag_active: 'active',
+    skill_tag_draft: 'draft',
+    skill_tag_imported: 'imported',
+    skill_tag_approval: 'human-approval',
+    no_skills: 'no skills found in my-agent/skills/'
   },
   zh: {
     powered_by: '由 commando 驱动',
@@ -61,7 +70,16 @@ const I18N = {
     sec: '秒',
     candidates: '条候选',
     ran_at: '跑于',
-    score: '分'
+    score: '分',
+    skills: '技能',
+    skills_active: '激活',
+    skills_draft: '草稿',
+    skills_imported: '从 Registry 导入',
+    skill_tag_active: 'active',
+    skill_tag_draft: 'draft',
+    skill_tag_imported: 'imported',
+    skill_tag_approval: '需人审',
+    no_skills: 'my-agent/skills/ 下没有发现 Skill'
   }
 };
 
@@ -191,6 +209,31 @@ function dashboard() {
       } else {
         window.open(task.artifact_uri, '_blank', 'noopener');
       }
+    },
+
+    skillTagClass(s) {
+      if (s.status === 'draft') return 'skill-tag skill-tag-draft';
+      if (s.status === 'imported-placeholder' || s.source) return 'skill-tag skill-tag-imported';
+      return 'skill-tag skill-tag-active';
+    },
+
+    skillTagLabel(s) {
+      if (s.status === 'draft') return this.t('skill_tag_draft');
+      if (s.status === 'imported-placeholder' || s.source) return this.t('skill_tag_imported');
+      return this.t('skill_tag_active');
+    },
+
+    skillsGrouped() {
+      const arr = (this.data && this.data.skills) || [];
+      const imported = [];
+      const drafts = [];
+      const actives = [];
+      for (const s of arr) {
+        if (s.status === 'draft') drafts.push(s);
+        else if (s.status === 'imported-placeholder' || s.source) imported.push(s);
+        else actives.push(s);
+      }
+      return { actives, imported, drafts };
     }
   };
 }

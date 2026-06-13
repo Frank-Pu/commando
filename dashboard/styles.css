@@ -91,10 +91,100 @@ html, body {
 button { font-family: inherit; cursor: pointer; }
 
 .scaffold {
-  max-width: 880px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 24px 28px 60px;
+  padding: 24px clamp(20px, 4vw, 56px) 60px;
 }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 24px;
+}
+
+@media (max-width: 1024px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; }
+}
+
+.skills-panel {
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-tertiary);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.skills-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 12px;
+}
+
+.skills-head .title {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.skills-head .count {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
+.skills-group {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.6px;
+  font-weight: 500;
+  margin: 12px 0 6px;
+}
+
+.skill-row {
+  padding: 8px 0;
+  border-top: 0.5px solid var(--border-tertiary);
+}
+.skill-row:first-of-type { border-top: none; }
+
+.skill-row .name {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-row .desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.skill-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+.skill-tag-active   { background: var(--teal-50); color: var(--teal-800); }
+.skill-tag-draft    { background: var(--amber-50); color: var(--amber-800); }
+.skill-tag-imported { background: var(--bg-tertiary); color: var(--text-secondary); }
+.skill-tag-approval { background: var(--coral-50); color: var(--coral-800); }
 
 .card {
   background: var(--bg-primary);

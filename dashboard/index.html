@@ -54,6 +54,9 @@
   </div>
 </header>
 
+<div class="layout">
+<main style="min-width:0;">
+
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;">
   <div class="metric">
     <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px;" x-text="t('awaiting')"></p>
@@ -199,10 +202,81 @@
   </div>
 </section>
 
+</main>
+
+<aside class="sidebar">
+  <div class="skills-panel">
+    <div class="skills-head">
+      <p class="title"><i class="ti ti-bolt" aria-hidden="true" style="font-size:14px;vertical-align:-2px;margin-right:4px;"></i><span x-text="t('skills')"></span></p>
+      <span class="count" x-text="(data.skills || []).length"></span>
+    </div>
+
+    <template x-if="(data.skills || []).length === 0">
+      <p style="font-size:12px;color:var(--text-tertiary);margin:0;" x-text="t('no_skills')"></p>
+    </template>
+
+    <template x-if="skillsGrouped().actives.length">
+      <div>
+        <p class="skills-group" x-text="t('skills_active')"></p>
+        <template x-for="s in skillsGrouped().actives" :key="s.id">
+          <div class="skill-row">
+            <p class="name">
+              <span x-text="s.id"></span>
+              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+              <template x-if="s.requires_human_approval">
+                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+              </template>
+            </p>
+            <p class="desc" x-text="s.description"></p>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="skillsGrouped().imported.length">
+      <div>
+        <p class="skills-group" x-text="t('skills_imported')"></p>
+        <template x-for="s in skillsGrouped().imported" :key="s.id">
+          <div class="skill-row">
+            <p class="name">
+              <span x-text="s.id"></span>
+              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+              <template x-if="s.requires_human_approval">
+                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+              </template>
+            </p>
+            <p class="desc" x-text="s.description"></p>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="skillsGrouped().drafts.length">
+      <div>
+        <p class="skills-group" x-text="t('skills_draft')"></p>
+        <template x-for="s in skillsGrouped().drafts" :key="s.id">
+          <div class="skill-row">
+            <p class="name">
+              <span x-text="s.id"></span>
+              <span :class="skillTagClass(s)" x-text="skillTagLabel(s)"></span>
+              <template x-if="s.requires_human_approval">
+                <span class="skill-tag skill-tag-approval" x-text="t('skill_tag_approval')"></span>
+              </template>
+            </p>
+            <p class="desc" x-text="s.description"></p>
+          </div>
+        </template>
+      </div>
+    </template>
+  </div>
+</aside>
+
+</div>
+
 <div class="footer">
   <p class="mono" style="margin:0;">./my-agent/</p>
   <p class="mono" style="margin:0;">
-    <span x-text="t('read_from')"></span> schedule.yaml
+    <span x-text="t('read_from')"></span> schedule.yaml + skills/
   </p>
 </div>
 
