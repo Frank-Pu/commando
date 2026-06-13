@@ -114,6 +114,16 @@ commando dashboard               # 本地 mini dashboard
 4. 跟它聊 60-120 分钟（Express 模式 25-30 分钟）
 5. 拿到一份可跑的 Configuration 骨架
 
+**也可以先看看 dashboard 长什么样**：
+
+```bash
+pip install pyyaml          # 唯一依赖
+python dashboard/server.py  # 浏览器自动打开 http://127.0.0.1:7878
+```
+
+teal + coral 配色 / EN-中切换 / dark mode / 审稿按钮跳本地 markdown。
+详见 [dashboard/README.md](dashboard/README.md)。
+
 ## 与 atu 的关系
 
 [atu](https://github.com/Frank-Pu/atu) 是 commando 的 dogfood——一个跑了

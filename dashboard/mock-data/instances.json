@@ -1,0 +1,33 @@
+[
+  {
+    "id": "morning_sense-2026-06-11T08:00",
+    "task_id": "morning_sense",
+    "skills": ["reddit-source-mining", "outlet-rss-scan"],
+    "status": "Done",
+    "started_at": "2026-06-11T08:00:00+08:00",
+    "ended_at": "2026-06-11T08:02:22+08:00",
+    "summary": "08:00 ran · 12 candidates · 142s",
+    "artifact_uri": null,
+    "workbench_uri": null
+  },
+  {
+    "id": "xhs_draft_tue-2026-06-11T11:00",
+    "task_id": "xhs_draft_tue",
+    "skills": ["xhs-bilingual-bridge"],
+    "status": "WaitingApproval",
+    "started_at": "2026-06-11T11:00:00+08:00",
+    "ended_at": "2026-06-11T11:01:28+08:00",
+    "summary": "11:00 ran · 1 笔记初稿 · 等你审稿",
+    "artifact_uri": "file://./mock-data/draft-xhs-tue.md",
+    "workbench_uri": null
+  },
+  {
+    "id": "user_call_prep-idle",
+    "task_id": "user_call_prep",
+    "skills": ["user-call-prep"],
+    "status": "Manual",
+    "summary": "Manual · IM trigger ready",
+    "artifact_uri": null,
+    "workbench_uri": null
+  }
+]

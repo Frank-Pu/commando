@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["dashboard/server.py", "--no-browser"],
+      "port": 7878
+    }
+  ]
+}

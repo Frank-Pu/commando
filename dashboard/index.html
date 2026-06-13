@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>commando dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+<link rel="stylesheet" href="/styles.css" />
+<script defer src="/app.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+</head>
+<body>
+<div class="scaffold" x-data="dashboard" x-init="init()">
+
+<div x-show="loading" class="empty-state">loading…</div>
+
+<div x-show="error" class="empty-state" style="color: var(--coral-600); border-color: var(--coral-200);">
+  <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+  <span x-text="error"></span>
+</div>
+
+<template x-if="data">
+<div>
+
+<header style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 18px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="position:relative;width:40px;height:40px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;" x-text="data.agent.avatar"></div>
+      <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--teal-400);border:2px solid var(--bg-secondary);"></span>
+    </div>
+    <div>
+      <p style="font-size:15px;font-weight:500;margin:0;" x-text="data.agent.name"></p>
+      <p style="font-size:12px;color:var(--text-secondary);margin:2px 0 0;">
+        <span x-text="data.agent.subtitle"></span>
+        <span style="color:var(--text-tertiary);"> · </span>
+        <span x-text="t('powered_by')" style="color:var(--text-tertiary);"></span>
+      </p>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:6px;">
+    <button class="icon-btn" @click="toggleLang()" :title="lang === 'zh' ? 'Switch to English' : '切换为中文'">
+      <span x-text="lang === 'zh' ? 'EN' : '中'" style="font-weight:500;font-size:12px;"></span>
+    </button>
+    <button class="icon-btn" @click="cycleTheme()" :title="theme">
+      <i class="ti" :class="themeIcon()" aria-hidden="true" style="font-size:15px;"></i>
+    </button>
+    <button class="icon-btn" @click="load()" :aria-label="t('refresh')">
+      <i class="ti ti-refresh" aria-hidden="true" style="font-size:15px;"></i>
+    </button>
+    <button class="icon-btn" :aria-label="t('settings')">
+      <i class="ti ti-settings" aria-hidden="true" style="font-size:15px;"></i>
+    </button>
+  </div>
+</header>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:22px;">
+  <div class="metric">
+    <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px;" x-text="t('awaiting')"></p>
+    <p style="font-size:24px;font-weight:500;line-height:1;margin:0;color:var(--coral-600);" x-text="data.metrics.awaiting"></p>
+  </div>
+  <div class="metric">
+    <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px;" x-text="t('running')"></p>
+    <p style="font-size:24px;font-weight:500;line-height:1;margin:0;color:var(--amber-600);" x-text="data.metrics.running"></p>
+  </div>
+  <div class="metric">
+    <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px;" x-text="t('done_today')"></p>
+    <p style="font-size:24px;font-weight:500;line-height:1;margin:0;color:var(--teal-600);" x-text="data.metrics.done_today"></p>
+  </div>
+  <div class="metric">
+    <p style="font-size:12px;color:var(--text-secondary);margin:0 0 4px;" x-text="t('this_week')"></p>
+    <p style="font-size:24px;font-weight:500;line-height:1;margin:0;" x-text="data.metrics.this_week"></p>
+  </div>
+</div>
+
+<nav style="display:flex;gap:4px;margin-bottom:22px;">
+  <button class="tab" :class="{'tab-active': activeTab === 'today'}" @click="activeTab='today'">
+    <i class="ti ti-list" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('today')"></span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'kanban'}" @click="activeTab='kanban'">
+    <i class="ti ti-layout-kanban" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('kanban')"></span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'calendar'}" @click="activeTab='calendar'">
+    <i class="ti ti-calendar" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('calendar')"></span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'table'}" @click="activeTab='table'">
+    <i class="ti ti-table" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('table')"></span>
+  </button>
+</nav>
+
+<section x-show="activeTab === 'today'">
+
+  <p class="sec-label">
+    <span x-text="t('today')"></span><span class="meta" x-text="dateLabel(data.today.date)"></span>
+  </p>
+
+  <template x-for="task in data.today.tasks" :key="task.id">
+    <div class="card" :class="{'card-ask': isAsk(task)}" style="margin-bottom:8px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+            <p style="font-size:14px;font-weight:500;margin:0;" x-text="task.task_id"></p>
+            <template x-for="s in (task.skills || [])" :key="s">
+              <span class="skill" x-text="s"></span>
+            </template>
+          </div>
+          <p style="font-size:12px;margin:0;" :style="isAsk(task) ? 'color: var(--coral-800);' : 'color: var(--text-secondary);'" x-text="task.summary"></p>
+          <button x-show="isAsk(task)" class="btn-primary" @click="openArtifact(task)" style="margin-top:10px;">
+            <span x-text="t('review_btn')"></span>
+            <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:12px;"></i>
+          </button>
+        </div>
+        <span :class="pillClass(task.status)">
+          <i class="ti" :class="pillIcon(task.status)" aria-hidden="true" style="font-size:11px;" x-show="pillIcon(task.status)"></i>
+          <span x-text="pillLabel(task.status)"></span>
+        </span>
+      </div>
+    </div>
+  </template>
+
+  <p class="sec-label" style="margin-top:24px;">
+    <span x-text="t('tomorrow')"></span><span class="meta" x-text="dateLabel(data.tomorrow.date)"></span>
+  </p>
+
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px 14px;margin-bottom:26px;">
+    <template x-for="t in data.tomorrow.tasks" :key="t.id">
+      <div style="display:flex;align-items:baseline;gap:10px;">
+        <span class="mono" style="font-size:12px;color:var(--teal-600);min-width:38px;font-weight:500;" x-text="t.time"></span>
+        <span style="font-size:13px;" x-text="t.task_id"></span>
+      </div>
+    </template>
+  </div>
+
+  <p class="sec-label" x-text="t('kanban_preview')"></p>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;">
+    <div>
+      <p style="font-size:11px;font-weight:500;color:var(--text-secondary);margin:0 0 6px;">
+        <span x-text="t('inbox')"></span> · <span x-text="data.kanban.inbox.length"></span>
+      </p>
+      <div class="col-bucket bucket-inbox">
+        <template x-if="data.kanban.inbox[0]">
+          <div>
+            <p style="font-size:12px;font-weight:500;margin:0 0 4px;line-height:1.4;" x-text="data.kanban.inbox[0].title"></p>
+            <p style="font-size:11px;color:var(--text-tertiary);margin:0;" x-text="data.kanban.inbox[0].meta"></p>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:11px;font-weight:500;color:var(--amber-800);margin:0 0 6px;">
+        <span x-text="t('wip')"></span> · <span x-text="data.kanban.wip.length"></span>
+      </p>
+      <div class="col-bucket bucket-wip">
+        <template x-if="data.kanban.wip[0]">
+          <div>
+            <p style="font-size:12px;font-weight:500;margin:0 0 4px;line-height:1.4;color:var(--amber-800);" x-text="data.kanban.wip[0].title"></p>
+            <p style="font-size:11px;color:var(--amber-800);margin:0;opacity:0.8;" x-text="data.kanban.wip[0].meta"></p>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:11px;font-weight:500;color:var(--coral-800);margin:0 0 6px;">
+        <span x-text="t('review_col')"></span> · <span x-text="data.kanban.review.length"></span>
+      </p>
+      <div class="col-bucket bucket-review">
+        <template x-if="data.kanban.review[0]">
+          <div>
+            <p style="font-size:12px;font-weight:500;margin:0 0 4px;line-height:1.4;color:var(--coral-800);" x-text="data.kanban.review[0].title"></p>
+            <p style="font-size:11px;color:var(--coral-800);margin:0;opacity:0.8;" x-text="data.kanban.review[0].meta"></p>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:11px;font-weight:500;color:var(--teal-800);margin:0 0 6px;">
+        <span x-text="t('done_col')"></span> · <span x-text="data.kanban.done.length"></span>
+      </p>
+      <div class="col-bucket bucket-done">
+        <template x-if="data.kanban.done[0]">
+          <div>
+            <p style="font-size:12px;font-weight:500;margin:0 0 4px;line-height:1.4;color:var(--teal-800);" x-text="data.kanban.done[0].title"></p>
+            <p style="font-size:11px;color:var(--teal-800);margin:0;opacity:0.8;" x-text="data.kanban.done[0].meta"></p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section x-show="activeTab !== 'today'">
+  <div class="empty-state">
+    <i class="ti ti-hourglass" aria-hidden="true" style="font-size:28px;display:block;margin-bottom:10px;"></i>
+    <span x-text="t('coming_soon')"></span>
+  </div>
+</section>
+
+<div class="footer">
+  <p class="mono" style="margin:0;">./my-agent/</p>
+  <p class="mono" style="margin:0;">
+    <span x-text="t('read_from')"></span> schedule.yaml
+  </p>
+</div>
+
+</div>
+</template>
+
+</div>
+</body>
+</html>
