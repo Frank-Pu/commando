@@ -45,6 +45,21 @@ const I18N = {
     open_all: 'open all',
     switch_agent: 'switch agent',
     items_total: '· {n} items',
+    activity: 'Live',
+    activity_subtitle: 'real-time agent action stream',
+    live: 'live',
+    events_today: '{n} events today',
+    just_now: 'just now',
+    minutes_ago: '{n}m ago',
+    yesterday: 'yest',
+    pause: 'pause',
+    resume: 'resume',
+    lvl_trigger: 'TRIG',
+    lvl_running: 'RUN',
+    lvl_done: 'DONE',
+    lvl_waiting: 'WAIT',
+    lvl_idle: 'IDLE',
+    lvl_im: 'IM',
     close: 'Close',
     kanban_subtitle: 'tasks across status',
     calendar_note: 'Tasks are derived from cron expressions in schedule.yaml; the agent fires them automatically — you only see them here.',
@@ -99,6 +114,21 @@ const I18N = {
     open_all: '全部打开',
     switch_agent: '切换 agent',
     items_total: '· {n} 条',
+    activity: '实况',
+    activity_subtitle: 'agent 实时行动流',
+    live: '在线',
+    events_today: '今日 {n} 条',
+    just_now: '刚刚',
+    minutes_ago: '{n} 分钟前',
+    yesterday: '昨天',
+    pause: '暂停',
+    resume: '继续',
+    lvl_trigger: '触发',
+    lvl_running: '运行',
+    lvl_done: '完成',
+    lvl_waiting: '待审',
+    lvl_idle: '空闲',
+    lvl_im: '私信',
     close: '关闭',
     kanban_subtitle: '按状态切分',
     calendar_note: '日程是从 schedule.yaml 的 cron 表达式推算的；agent 会自动触发，你只是看到。',
@@ -141,11 +171,99 @@ function dashboard() {
     data: null,
     loading: true,
     error: null,
+    nowClock: '',
+    liveEvents: [],
+    livePaused: false,
+    _liveTimer: null,
+    _clockTimer: null,
+    _liveSeedIdx: 0,
 
     async init() {
       applyTheme(this.theme);
       await this.loadAgents();
       await this.load();
+      this.startClock();
+      this.startLive();
+    },
+
+    startClock() {
+      const tick = () => {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        this.nowClock = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      };
+      tick();
+      if (this._clockTimer) clearInterval(this._clockTimer);
+      this._clockTimer = setInterval(tick, 1000);
+    },
+
+    startLive() {
+      if (this._liveTimer) clearInterval(this._liveTimer);
+      this._liveSeedIdx = 0;
+      this._liveTimer = setInterval(() => {
+        if (this.livePaused) return;
+        if (this.activeTab !== 'activity') return;
+        this.injectLiveEvent();
+      }, 9000);
+    },
+
+    injectLiveEvent() {
+      const seeds = (this.data && this.data.activity && this.data.activity.live_seeds) || [];
+      if (!seeds.length) return;
+      const seed = seeds[this._liveSeedIdx % seeds.length];
+      this._liveSeedIdx++;
+      const ev = Object.assign({}, seed, {
+        ts: new Date().toISOString(),
+        _id: 'live-' + Date.now(),
+        _fresh: true,
+      });
+      this.liveEvents = [ev, ...this.liveEvents].slice(0, 40);
+      setTimeout(() => { ev._fresh = false; }, 4000);
+    },
+
+    toggleLive() { this.livePaused = !this.livePaused; },
+
+    allEvents() {
+      const historical = (this.data && this.data.activity && this.data.activity.events) || [];
+      return [...this.liveEvents, ...historical].slice(0, 80);
+    },
+
+    eventsTodayCount() {
+      const all = this.allEvents();
+      const today = new Date().toDateString();
+      return all.filter(e => new Date(e.ts).toDateString() === today).length;
+    },
+
+    formatTs(ts) {
+      const d = new Date(ts);
+      const now = new Date();
+      const diffSec = Math.floor((now - d) / 1000);
+      if (diffSec < 60) return this.t('just_now');
+      if (diffSec < 3600) return this.t('minutes_ago').replace('{n}', Math.floor(diffSec / 60));
+      const pad = (n) => String(n).padStart(2, '0');
+      const sameDay = d.toDateString() === now.toDateString();
+      const yest = new Date(now); yest.setDate(now.getDate() - 1);
+      const isYest = d.toDateString() === yest.toDateString();
+      const hhmm = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+      if (sameDay) return hhmm;
+      if (isYest) return this.t('yesterday') + ' ' + hhmm.slice(0, 5);
+      return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hhmm.slice(0, 5);
+    },
+
+    formatDuration(ms) {
+      if (!ms) return '';
+      if (ms < 1000) return ms + 'ms';
+      const s = Math.round(ms / 1000);
+      if (s < 60) return s + 's';
+      return Math.floor(s / 60) + 'm' + (s % 60) + 's';
+    },
+
+    lvlLabel(lvl) {
+      return this.t('lvl_' + lvl) || lvl;
+    },
+
+    lvlClass(lvl) {
+      return 'lvl lvl-' + lvl;
     },
 
     async loadAgents() {
@@ -193,6 +311,8 @@ function dashboard() {
       localStorage.setItem('commando.activeAgent', id);
       this.agentMenuOpen = false;
       this.activeTab = 'today';
+      this.liveEvents = [];
+      this._liveSeedIdx = 0;
       await this.load();
     },
 

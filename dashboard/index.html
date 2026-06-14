@@ -26,7 +26,7 @@
   <div class="agent-switcher" @click.outside="agentMenuOpen = false">
     <button class="agent-switcher-trigger" @click="agentMenuOpen = !agentMenuOpen" :aria-label="t('switch_agent')">
       <div style="position:relative;width:40px;height:40px;flex-shrink:0;">
-        <div style="width:40px;height:40px;border-radius:50%;background:var(--teal-50);color:var(--teal-800);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;" x-text="data.agent.avatar"></div>
+        <img :src="data.agent.avatar_url" :alt="data.agent.name" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;" />
         <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--teal-400);border:2px solid var(--bg-secondary);"></span>
       </div>
       <div style="min-width:0;">
@@ -43,7 +43,7 @@
     <div class="agent-menu" x-show="agentMenuOpen" x-cloak x-transition.opacity>
       <template x-for="a in agents" :key="a.id">
         <button class="agent-menu-item" :class="{ active: a.id === activeAgentId }" @click="switchAgent(a.id)">
-          <span class="agent-menu-avatar" x-text="a.avatar"></span>
+          <img :src="a.avatar_url" :alt="a.name" class="agent-menu-avatar" style="object-fit:cover;" />
           <span style="flex:1;min-width:0;">
             <span style="display:block;font-size:13px;font-weight:500;" x-text="a.name"></span>
             <span class="meta" x-text="a.subtitle"></span>
@@ -114,6 +114,10 @@
   <button class="tab" :class="{'tab-active': activeTab === 'knowledge'}" @click="activeTab='knowledge'">
     <i class="ti ti-books" aria-hidden="true" style="font-size:14px;"></i>
     <span x-text="t('knowledge')"></span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'activity'}" @click="activeTab='activity'">
+    <i class="ti ti-broadcast" aria-hidden="true" style="font-size:14px;"></i>
+    <span x-text="t('activity')"></span>
   </button>
 </nav>
 
@@ -338,6 +342,46 @@
   </div>
 
   <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;" x-text="t('calendar_note')"></p>
+</section>
+
+<section x-show="activeTab === 'activity'">
+  <div class="act-head">
+    <p class="sec-label" style="margin:0;">
+      <span x-text="t('activity')"></span><span class="meta" x-text="t('activity_subtitle')"></span>
+    </p>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="act-pulse">
+        <span class="act-pulse-dot" :style="livePaused ? 'background:var(--text-tertiary);' : ''"></span>
+        <span x-text="livePaused ? t('pause') : t('live')"></span>
+        <span style="color:var(--text-tertiary);" x-text="'· ' + t('events_today').replace('{n}', eventsTodayCount())"></span>
+      </span>
+      <span class="act-now" x-text="nowClock"></span>
+      <button class="icon-btn" @click="toggleLive()" style="font-size:12px;padding:4px 10px;">
+        <i class="ti" :class="livePaused ? 'ti-player-play' : 'ti-player-pause'" aria-hidden="true" style="font-size:13px;"></i>
+        <span x-text="livePaused ? t('resume') : t('pause')"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="act-feed">
+    <template x-for="ev in allEvents()" :key="ev._id || (ev.ts + (ev.task_id || '') + ev.message)">
+      <div class="act-row" :class="{ 'is-fresh': ev._fresh }">
+        <span class="ts" x-text="formatTs(ev.ts)"></span>
+        <span :class="lvlClass(ev.level)" x-text="lvlLabel(ev.level)"></span>
+        <span class="msg">
+          <template x-if="ev.skill">
+            <span class="skill" x-text="ev.skill"></span>
+          </template>
+          <span x-text="ev.message"></span>
+        </span>
+        <span class="dur" x-text="formatDuration(ev.duration_ms)"></span>
+      </div>
+    </template>
+  </div>
+
+  <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;">
+    每 9 秒自动追加一条新 event（v0.1 mock 模拟器）· runtime 接通后会改成真实 Episodic Memory 推送
+  </p>
 </section>
 
 <section x-show="activeTab === 'knowledge'">

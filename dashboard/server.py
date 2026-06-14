@@ -17,7 +17,7 @@ import subprocess
 import sys
 import urllib.parse
 import webbrowser
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -69,7 +69,9 @@ def load_agent(agent_dir: Path) -> dict:
                     name = rest
                 break
     avatar = name[:1] if name else "a"
-    return {"name": name, "subtitle": subtitle, "avatar": avatar}
+    agent_key = agent_dir.name if agent_dir else "default"
+    avatar_url = AVATAR_URLS.get(agent_key) or avatar_url_for(agent_key)
+    return {"name": name, "subtitle": subtitle, "avatar": avatar, "avatar_url": avatar_url}
 
 
 def load_schedule(agent_dir: Path) -> list:
@@ -192,6 +194,26 @@ def load_mock_instances() -> list:
     return instances
 
 
+DICEBEAR_STYLE = "personas"
+AGENT_BACKGROUNDS = {
+    "atu": "E1F5EE",     # teal-50
+    "caiwa": "FAECE7",   # coral-50
+}
+
+
+def avatar_url_for(agent_id: str) -> str:
+    bg = AGENT_BACKGROUNDS.get(agent_id, "E1F5EE")
+    seed = agent_id or "default"
+    return (f"https://api.dicebear.com/9.x/{DICEBEAR_STYLE}/svg"
+            f"?seed={seed}&backgroundColor={bg}&radius=50")
+
+
+AVATAR_URLS = {
+    "atu":   avatar_url_for("atu"),
+    "caiwa": avatar_url_for("caiwa"),
+}
+
+
 def discover_agents(root: Optional[Path], primary_dir: Path, multi_agent_mode: bool) -> list:
     if multi_agent_mode and root and root.exists() and root.is_dir():
         agents = []
@@ -200,16 +222,19 @@ def discover_agents(root: Optional[Path], primary_dir: Path, multi_agent_mode: b
                 a = load_agent(sub)
                 a["id"] = sub.name
                 a["dir"] = str(sub)
+                a["avatar_url"] = AVATAR_URLS.get(sub.name)
                 agents.append(a)
         if agents:
             return agents
-    primary = {"id": "atu", "dir": str(primary_dir)}
+    primary = {"id": "atu", "dir": str(primary_dir), "avatar_url": AVATAR_URLS["atu"]}
     if primary_dir.exists() and (primary_dir / "charter.md").exists():
         primary.update(load_agent(primary_dir))
+        primary["avatar_url"] = AVATAR_URLS["atu"]
     else:
         primary.update({"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿"})
     secondary = {"id": "caiwa", "name": "财娃", "subtitle": "投研助手 · A 股 + 港股",
-                 "avatar": "财", "dir": "(mock — v0.1 demo)"}
+                 "avatar": "财", "avatar_url": AVATAR_URLS["caiwa"],
+                 "dir": "(mock — v0.1 demo)"}
     return [primary, secondary]
 
 
@@ -312,7 +337,130 @@ def build_data(agent_dir: Path) -> dict:
         "week": week,
         "month": month,
         "knowledge": _knowledge_growth_partner(),
+        "activity": _mock_activity_atu(today),
     }, skills)
+
+
+def _mock_activity_atu(today: date) -> dict:
+    base = datetime.now().astimezone()
+    def at(hour, minute, second=0, day_offset=0):
+        ref = base.replace(hour=hour, minute=minute, second=second, microsecond=0)
+        return (ref - timedelta(days=day_offset)).isoformat()
+
+    events = [
+        {"ts": at(14, 23, 7), "level": "im", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue",
+         "message": "IM @ Qihang: 「今天选题里这条值得看一下 → reddit.com/r/languagelearning/...」"},
+        {"ts": at(14, 21, 55), "level": "done", "skill": "marketing-effect-analysis",
+         "task_id": "weekly_data_review", "message": "7 张图已生成 · weekly-data-report.md 已写", "duration_ms": 89000},
+        {"ts": at(14, 18, 42), "level": "running", "skill": "marketing-effect-analysis",
+         "task_id": "weekly_data_review", "message": "调用 marketing-effect-analysis · 89%"},
+        {"ts": at(14, 17, 11), "level": "running", "skill": "marketing-effect-analysis",
+         "task_id": "weekly_data_review", "message": "抓 plausible.io 数据 · 7 天窗口"},
+        {"ts": at(14, 16, 22), "level": "running", "skill": "marketing-effect-analysis",
+         "task_id": "weekly_data_review", "message": "抓 xhs_data · 商业号 + 个人号"},
+        {"ts": at(14, 15, 0), "level": "trigger", "task_id": "weekly_data_review",
+         "message": "cron 0 16 * * 5 · weekly_data_review"},
+        {"ts": at(13, 50, 11), "level": "idle", "message": "等待下一个 trigger · next: 14:15 weekly_data_review"},
+        {"ts": at(11, 30, 8), "level": "im", "task_id": "xhs_draft_tue",
+         "message": "IM @ Qihang: 「xhs_draft_tue 等你审稿 · 审稿 checklist 见 docx 末」"},
+        {"ts": at(11, 2, 34), "level": "waiting", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue", "message": "artifact 已提交飞书 docx · 等你审稿", "duration_ms": 107000},
+        {"ts": at(11, 1, 47), "level": "done", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue", "message": "slide_plan.json + 12 张图占位 · CHECKLIST.md 写好"},
+        {"ts": at(11, 0, 59), "level": "running", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue", "message": "Bridge 公式 A · 写第 5 / 5 段"},
+        {"ts": at(10, 59, 14), "level": "running", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue", "message": "Bridge 公式 A · 写第 3 / 5 段"},
+        {"ts": at(10, 58, 22), "level": "running", "skill": "xhs-bilingual-bridge",
+         "task_id": "xhs_draft_tue", "message": '从选题池取 1 条 · "How I learn idioms passively" (score 4.3)'},
+        {"ts": at(11, 0, 0), "level": "trigger", "task_id": "xhs_draft_tue",
+         "message": "cron 0 11 * * 2 · xhs_draft_tue"},
+        {"ts": at(10, 33, 8), "level": "done", "skill": "user-call-prep",
+         "task_id": "user_call_prep", "message": "5 问已草稿 · call-prep-userC.md 写好 · 推 IM 提醒",
+         "duration_ms": 116000},
+        {"ts": at(10, 31, 22), "level": "running", "skill": "user-call-prep",
+         "task_id": "user_call_prep", "message": "WebFetch LinkedIn · 拉历史 IM 对话"},
+        {"ts": at(10, 30, 55), "level": "trigger", "task_id": "user_call_prep",
+         "message": "manual · IM Qihang: 「明天 14:30 我跟用户 C 聊」"},
+        {"ts": at(9, 47, 13), "level": "im",
+         "message": "IM @ Qihang: 「Reddit 12 条选题已入库 · 看看哪条做今天的稿」"},
+        {"ts": at(8, 2, 22), "level": "done", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "12 candidates · score >= 4 · 写入选题池",
+         "duration_ms": 142000},
+        {"ts": at(8, 1, 48), "level": "running", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "LLM 4 维打分 · 47 / 47 条"},
+        {"ts": at(8, 0, 14), "level": "running", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "抓 r/IWantToLearn · top 24h · 12 条候选"},
+        {"ts": at(8, 0, 11), "level": "running", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "抓 r/ChineseLanguage · top 24h · 8 条候选"},
+        {"ts": at(8, 0, 8), "level": "running", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "抓 r/LearnEnglish · top 24h · 14 条候选"},
+        {"ts": at(8, 0, 3), "level": "running", "skill": "reddit-source-mining",
+         "task_id": "morning_sense", "message": "抓 r/languagelearning · top 24h · 13 条候选"},
+        {"ts": at(8, 0, 0), "level": "trigger", "task_id": "morning_sense",
+         "message": "cron 0 8 * * * · morning_sense"},
+        {"ts": at(19, 0, 14, day_offset=1), "level": "done", "skill": "user-feedback-curator",
+         "task_id": "weekly_reflection",
+         "message": "Semantic memory: content-formula-performance.md 已更新", "duration_ms": 67000},
+        {"ts": at(19, 0, 0, day_offset=1), "level": "trigger", "task_id": "weekly_reflection",
+         "message": "cron 0 19 * * 0 · weekly_reflection"},
+        {"ts": at(16, 30, 22, day_offset=2), "level": "done", "skill": "user-call-debrief",
+         "task_id": "user_call_debrief", "message": "用户 A debrief 5 条 insight · user-quote-vault.md 追加 3 条"},
+    ]
+    seeds = [
+        {"level": "im", "message": "IM @ Qihang: 「今天的复盘做完了，重点 3 条」"},
+        {"level": "running", "skill": "reddit-source-mining", "message": "扫描中 · r/ChineseLanguage · 已处理 8 / 24"},
+        {"level": "trigger", "task_id": "morning_sense", "message": "cron 0 8 * * * · 准备启动"},
+        {"level": "idle", "message": "等待下一个 trigger"},
+        {"level": "done", "skill": "outlet-rss-scan", "message": "外刊 RSS 已扫 · 6 条入选 (Economist 3 / NYT 2 / Aeon 1)", "duration_ms": 18000},
+        {"level": "running", "skill": "marketing-effect-analysis", "message": "对账 stripe 后台 · 抓近 7 天 paid signup 5 条"},
+        {"level": "im", "message": "IM @ Qihang: 「波兰那位 paid user 今天又登了一次，看要不要主动联系」"},
+        {"level": "waiting", "skill": "xhs-bilingual-bridge", "task_id": "xhs_draft_fri", "message": "新稿已提交 · 等你审"},
+    ]
+    return {"events": events, "live_seeds": seeds}
+
+
+def _mock_activity_caiwa() -> dict:
+    base = datetime.now().astimezone()
+    def at(hour, minute, second=0):
+        return base.replace(hour=hour, minute=minute, second=second, microsecond=0).isoformat()
+
+    events = [
+        {"ts": at(14, 0, 8), "level": "im", "skill": "earnings-fetcher",
+         "task_id": "earnings_check",
+         "message": "IM @ Qihang: 「BYD 25Q4 营收低于一致预期 2.3% · brief 已写，待你审」"},
+        {"ts": at(13, 58, 12), "level": "waiting", "skill": "earnings-fetcher",
+         "task_id": "earnings_check", "message": "比亚迪 25Q4 brief · artifact 已提交 · 等你审稿"},
+        {"ts": at(13, 56, 44), "level": "done", "skill": "earnings-fetcher",
+         "task_id": "earnings_check", "message": "BYD 关键差异已标注: 毛利率 -1.8pp / 海外销量 +28%",
+         "duration_ms": 92000},
+        {"ts": at(13, 55, 0), "level": "trigger", "task_id": "earnings_check",
+         "message": "manual · 港股盘后 BYD 财报发布"},
+        {"ts": at(10, 31, 0), "level": "done", "skill": "sector-rotation-scan",
+         "task_id": "sector_rotation_scan",
+         "message": "28 个申万一级行业资金流已扫 · 异常: 电力设备 +1.8σ", "duration_ms": 44000},
+        {"ts": at(10, 30, 0), "level": "trigger", "task_id": "sector_rotation_scan",
+         "message": "cron 30 10 * * 1-5"},
+        {"ts": at(9, 16, 33), "level": "done", "skill": "a-share-scan",
+         "task_id": "market_open_brief", "message": "12 holdings brief · 比亚迪 / 宁德 / 拼多多 重点关注",
+         "duration_ms": 87000},
+        {"ts": at(9, 15, 0), "level": "trigger", "task_id": "market_open_brief",
+         "message": "cron 15 9 * * 1-5"},
+        {"ts": at(7, 30, 22), "level": "done", "skill": "us-overnight-recap",
+         "task_id": "us_overnight", "message": "NVDA +2.1% · BABA +0.8% · 中概股 ADR 整体偏强",
+         "duration_ms": 41000},
+        {"ts": at(7, 30, 0), "level": "trigger", "task_id": "us_overnight",
+         "message": "cron 30 7 * * 1-5"},
+    ]
+    seeds = [
+        {"level": "running", "skill": "a-share-scan", "message": "扫沪深通净流入 · 北向 +12.4 亿"},
+        {"level": "im", "message": "IM @ Qihang: 「比亚迪 25Q4 数据全 → DCF 模型更新中」"},
+        {"level": "done", "skill": "valuation-model", "message": "比亚迪 DCF 2026 估值刷新 · 目标价 ¥420", "duration_ms": 52000},
+        {"level": "trigger", "task_id": "market_open_brief", "message": "cron 15 9 * * 1-5"},
+        {"level": "idle", "message": "盘前等待 · next: 09:15 market_open_brief"},
+    ]
+    return {"events": events, "live_seeds": seeds}
 
 
 def _knowledge_growth_partner() -> list:
@@ -560,8 +708,12 @@ def _default_summary(task: dict, status: str) -> str:
 
 def _full_mock(agent: dict) -> dict:
     today = date.today()
+    default_agent = {"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿", "avatar_url": AVATAR_URLS["atu"]}
+    resolved = agent if agent.get("name") != "agent" else default_agent
+    if "avatar_url" not in resolved:
+        resolved["avatar_url"] = AVATAR_URLS.get("atu")
     return {
-        "agent": agent if agent.get("name") != "agent" else {"name": "阿土", "subtitle": "LeMingle 增长合伙人", "avatar": "阿"},
+        "agent": resolved,
         "metrics": {"awaiting": 1, "running": 2, "done_today": 4, "this_week": 9},
         "today": {
             "date": today.isoformat(),
@@ -595,13 +747,15 @@ def _full_mock(agent: dict) -> dict:
         "week": _mock_week(today),
         "month": _mock_month(today),
         "knowledge": _knowledge_growth_partner(),
+        "activity": _mock_activity_atu(today),
     }
 
 
 def build_mock_for_agent(agent_id: str) -> dict:
     today = date.today()
     if agent_id == "caiwa":
-        agent = {"name": "财娃", "subtitle": "投研助手 · A 股 + 港股", "avatar": "财"}
+        agent = {"name": "财娃", "subtitle": "投研助手 · A 股 + 港股", "avatar": "财",
+                 "avatar_url": AVATAR_URLS["caiwa"]}
         return {
             "agent": agent,
             "metrics": {"awaiting": 2, "running": 1, "done_today": 6, "this_week": 14},
@@ -636,6 +790,7 @@ def build_mock_for_agent(agent_id: str) -> dict:
             "week": _mock_week(today),
             "month": _mock_month(today),
             "knowledge": _knowledge_finance_analyst(),
+            "activity": _mock_activity_caiwa(),
             "skills": _mock_skills_finance(),
         }
     # default: atu / growth-partner
