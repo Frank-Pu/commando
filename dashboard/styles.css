@@ -815,6 +815,21 @@ button { font-family: inherit; cursor: pointer; }
 
 .act-row.is-fresh .msg { color: var(--teal-800); font-weight: 500; }
 
+.act-im-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--coral-600);
+  padding: 1px 6px;
+  background: var(--coral-50);
+  border-radius: 3px;
+  margin-left: 6px;
+  font-family: "SF Mono", Menlo, monospace;
+  letter-spacing: 0.2px;
+  vertical-align: 1px;
+}
+
 html[data-theme="dark"] .act-row.is-fresh .msg { color: var(--teal-800); }
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) .act-row.is-fresh .msg { color: var(--teal-800); }

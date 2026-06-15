@@ -266,6 +266,15 @@ function dashboard() {
       return 'lvl lvl-' + lvl;
     },
 
+    wouldPushToIM(ev) {
+      if (!ev) return false;
+      if (ev.level === 'im' || ev.level === 'waiting') return true;
+      if (ev.level === 'done' && ['user-call-debrief', 'user-feedback-curator',
+                                  'marketing-effect-analysis'].includes(ev.skill)) return true;
+      if (ev.level === 'done' && ev.task_id === 'morning_sense') return true;
+      return false;
+    },
+
     async loadAgents() {
       try {
         const r = await fetch('/api/agents');

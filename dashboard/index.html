@@ -373,6 +373,11 @@
             <span class="skill" x-text="ev.skill"></span>
           </template>
           <span x-text="ev.message"></span>
+          <template x-if="wouldPushToIM(ev)">
+            <span class="act-im-tag" title="event-routing.yaml 会把这条推到飞书 IM">
+              <i class="ti ti-send" aria-hidden="true" style="font-size:9px;"></i>IM
+            </span>
+          </template>
         </span>
         <span class="dur" x-text="formatDuration(ev.duration_ms)"></span>
       </div>
@@ -380,7 +385,9 @@
   </div>
 
   <p style="font-size:11px;color:var(--text-tertiary);margin:14px 0 0;font-style:italic;">
-    每 9 秒自动追加一条新 event（v0.1 mock 模拟器）· runtime 接通后会改成真实 Episodic Memory 推送
+    每 9 秒自动追加一条新 event（v0.1 mock 模拟器）· runtime 接通后改成真实 Episodic Memory · 标有
+    <span class="act-im-tag" style="font-size:9px;padding:0 4px;"><i class="ti ti-send" aria-hidden="true" style="font-size:8px;"></i>IM</span>
+    的 event 由 <span class="mono" style="color:var(--text-secondary);">event-routing.yaml</span> 决定推送到飞书（v0.2 启用）
   </p>
 </section>
 

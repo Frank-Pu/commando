@@ -1,0 +1,107 @@
+# event-routing.yaml v0.1 — 阿土 / LeMingle 增长合伙人
+#
+# 决定 Episodic Memory 里哪些 event 被推到哪个 IM。
+# 完整 spec 见 commando/docs/event-bus.md
+#
+# 评估语义：自上而下首次匹配生效；不匹配任何规则 → 默认不推送。
+
+version: 0.1
+
+# ====================================================================
+# 推送规则
+# ====================================================================
+rules:
+
+  # ──────────────────────────────────────────────────────────────────
+  # 必推 #1：agent 主动找你（level: im）
+  # 这是 agent 唯一能"主动开口"的方式，不能漏
+  # ──────────────────────────────────────────────────────────────────
+  - name: agent_speaks
+    when:
+      level: im
+    push_to: [feishu_im_dm]
+    template: |
+      🔔 {agent_name}
+      {message}
+
+  # ──────────────────────────────────────────────────────────────────
+  # 必推 #2：等用户审稿（level: waiting）
+  # commando 全局红线：所有发布必须人审
+  # ──────────────────────────────────────────────────────────────────
+  - name: waiting_for_review
+    when:
+      level: waiting
+    push_to: [feishu_im_dm]
+    template: |
+      ⏳ {agent_name} · {task_id}
+      等你审稿
+      {message}
+    card_actions:
+      primary:
+        text: "审稿 →"
+        uri: "{artifact_uri}"
+      secondary:
+        text: "看状态行"
+        uri: "{workbench_uri}"
+
+  # ──────────────────────────────────────────────────────────────────
+  # 选推：高价值任务完成（产生用户深聊洞察 / 周复盘等）
+  # ──────────────────────────────────────────────────────────────────
+  - name: high_value_done
+    when:
+      level: done
+      skill_in:
+        - user-call-debrief
+        - user-feedback-curator
+        - marketing-effect-analysis
+    push_to: [feishu_im_dm]
+    template: |
+      ✅ {agent_name} · {task_id}
+      {message}
+      耗时 {duration_human}
+
+  # ──────────────────────────────────────────────────────────────────
+  # 选推：日常 morning_sense 完成 → 简短摘要
+  # ──────────────────────────────────────────────────────────────────
+  - name: morning_sense_done
+    when:
+      level: done
+      task_id: morning_sense
+    push_to: [feishu_im_dm]
+    template: |
+      ☀️ {agent_name} · 今日候选已入库
+      {message}
+      [打开选题池 ↗]({workbench_uri})
+
+  # 任何其他 done / running / idle / trigger event
+  # 默认不推送 —— 只在 dashboard Activity tab 可见
+
+# ====================================================================
+# 推送目的地
+# ====================================================================
+destinations:
+
+  feishu_im_dm:
+    via_connector: im-feishu
+    channel: dm_qihang          # 飞书 IM 1:1 私聊
+    rate_limit: 30/hour         # 防 IM 骚扰：每小时最多 30 条
+    quiet_hours: ["22:00", "08:00"]   # 这段时间不推送（攒到 next morning_sense 触发后一起发）
+    dedup_window: 5min          # 同一 event_id 5 分钟内只推一次（防重启重发）
+
+# ====================================================================
+# 全局默认（任意规则不显式覆盖时套用）
+# ====================================================================
+defaults:
+  agent_name: 阿土               # 模板里 {agent_name} 默认替换
+  failure_retry: 3              # 推送失败重试次数（exponential backoff）
+  failure_callback: write_episodic_failure   # 失败写回 episodic 标 delivery_failed
+
+# ====================================================================
+# 备注
+# ====================================================================
+# 1. 推送的所有事件**仍在** Episodic Memory 里——dashboard Activity tab
+#    永远是完整历史。IM 只是订阅了"关键节点"
+# 2. 想测试 routing 不真发：commando route --dry --event-id <id>
+# 3. 想暂停所有 IM 推送：把整个 rules 数组注释掉即可
+# 4. 想加新 IM 平台：先 `commando connect im-dingtalk` 生成 connector，
+#    然后 destinations 里加个 dingtalk_im_dm 引用它

@@ -18,6 +18,7 @@
 | [scheduler.md](scheduler.md) | 产品表面（一张表两种 row + 4 种视图） | 写 schedule.yaml / 理解产品 UX 的人 |
 | [skill.md](skill.md) | Skill 格式（Claude Code Skills + commando 扩展） | 写 / 复用 / 贡献 Skill 的人 |
 | [memory.md](memory.md) | 三层记忆 Working / Episodic / Semantic + 与 Charter 的边界 | 设计长程 agent / 写 Reflection 的人 |
+| [event-bus.md](event-bus.md) | Episodic 作为 event bus + IM 推送 routing | 想把活动流推到飞书/钉钉/Slack 的人 |
 
 ## 底层机制 Spec（"框架内部怎么转"）
 
