@@ -158,28 +158,18 @@ def dashboard(port, no_browser, agent_dir):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# commando run — Runtime Core entrypoint (stub for v0.1)
+# commando run — one-shot Skill execution (v0.2 minimum Runtime)
 # ──────────────────────────────────────────────────────────────────────────────
 @cli.command()
-@click.option("--task", default=None, help="Task id to run (manual trigger).")
-@click.option("--agent-dir", default="./my-agent")
-def run(task, agent_dir):
-    """Run the Runtime (Planner + Workbench + Memory + Skill execution)."""
-    _print_panel(
-        "Coming in v0.2 — Runtime Core",
-        [
-            "atu has a working Runtime that you can fork today:",
-            "  https://github.com/Frank-Pu/atu/tree/main/runtime",
-            "",
-            "commando v0.2 will ship a generic version that loads any",
-            "commando Configuration (charter / schedule / skills / connectors)",
-            "and executes the schedule.yaml cron tasks.",
-            "",
-            f"Your Configuration: {Path(agent_dir).resolve()}",
-            f"Requested task   : {task or '(none)'}",
-        ],
-        color="yellow",
-    )
+@click.option("--task", "task_id", required=True, help="Task id from schedule.yaml.")
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("--apply", is_flag=True, help="Actually call Anthropic API (default: dry-run).")
+@click.option("--inputs", default=None, help="Override user message sent to the Skill.")
+def run(task_id, target, apply, inputs):
+    """Execute a task from schedule.yaml (one-shot, manual trigger)."""
+    from commando.run import run as _run
+
+    _run(target, task_id, apply, inputs)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

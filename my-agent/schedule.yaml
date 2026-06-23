@@ -134,6 +134,20 @@ tasks:
     tags: [reflection, weekly]
 
   # ============================================================
+  # v0.2 Runtime 示例 task · 手动触发的最小可执行 Skill
+  # 用于：commando run --task daily_greeting --apply
+  # ============================================================
+  - id: daily_greeting
+    name: 一句话晨间问候（Runtime 自检 task）
+    enabled: true
+    trigger:
+      type: manual
+    skills: [daily-greeting]
+    outputs:
+      episodic: true
+    tags: [runtime-smoke-test]
+
+  # ============================================================
   # 用户研究 · ad-hoc 触发
   # ============================================================
   - id: user_call_prep
