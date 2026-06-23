@@ -1,51 +1,151 @@
-"""LLM client — single-shot Skill execution with auto-fallback.
+"""LLM client — uses whatever agent CLI the user already has installed.
 
-Backend resolution order:
-  1. ANTHROPIC_API_KEY env var or credentials/anthropic.yaml → Anthropic SDK
-     (best for headless / cron — independent of Claude Code login state)
-  2. `claude` CLI in PATH                                    → claude -p subprocess
-     (best for users who already have Claude Code — zero extra config)
-  3. otherwise                                               → fail with clear instructions
+commando is the Configuration layer. The LLM is **the user's choice**, not
+something commando bundles. This module discovers an agent CLI in PATH and
+shells out to it. No SDK is the "default".
+
+Detection order (first found wins, override with $COMMANDO_LLM):
+    claude   — Anthropic Claude Code           (verified)
+    codex    — OpenAI Codex CLI                (community)
+    kimi     — Moonshot Kimi CLI               (community)
+    glm      — Zhipu GLM CLI                   (community)
+    qwen     — Alibaba Qwen CLI                (community)
+
+For **headless cron** use where no interactive CLI is logged in, set
+ANTHROPIC_API_KEY (env or credentials/anthropic.yaml) and we fall back to
+the Anthropic SDK. SDK is **not the default** — it's a last resort for
+unattended jobs.
+
+To add a new CLI: open a PR adding an entry to AGENT_CLIS below. The
+contract is `make_cmd(system, user, model) -> list[str]` returning argv.
 """
 
 import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Dict, Optional
 
 
-def _load_api_key(agent_dir: Path) -> Optional[str]:
-    """Read ANTHROPIC_API_KEY env var first; fall back to credentials/anthropic.yaml."""
-    env_key = os.environ.get("ANTHROPIC_API_KEY")
-    if env_key:
-        return env_key
+# ──────────────────────────────────────────────────────────────────────────────
+# Agent CLI registry — community-extensible
+# ──────────────────────────────────────────────────────────────────────────────
 
-    cred_path = agent_dir / "credentials" / "anthropic.yaml"
-    if cred_path.exists():
-        try:
-            import yaml  # type: ignore
-            data = yaml.safe_load(cred_path.read_text(encoding="utf-8")) or {}
-            return data.get("api_key")
-        except Exception:
-            return None
+def _claude_cmd(system: str, user: str, model: str) -> list:
+    return [
+        "claude", "-p", user,
+        "--append-system-prompt", system,
+        "--model", model,
+    ]
 
+
+def _codex_cmd(system: str, user: str, model: str) -> list:
+    # Approximate; community to verify and PR fix
+    return ["codex", "exec", user, "--model", model]
+
+
+def _kimi_cmd(system: str, user: str, model: str) -> list:
+    return ["kimi", "chat", "--system", system, user, "--model", model]
+
+
+def _glm_cmd(system: str, user: str, model: str) -> list:
+    return ["glm", "chat", "--system", system, user, "--model", model]
+
+
+def _qwen_cmd(system: str, user: str, model: str) -> list:
+    return ["qwen", "chat", "--system", system, user, "--model", model]
+
+
+AGENT_CLIS: Dict[str, dict] = {
+    "claude": {"binary": "claude", "make_cmd": _claude_cmd, "verified": True},
+    "codex":  {"binary": "codex",  "make_cmd": _codex_cmd,  "verified": False},
+    "kimi":   {"binary": "kimi",   "make_cmd": _kimi_cmd,   "verified": False},
+    "glm":    {"binary": "glm",    "make_cmd": _glm_cmd,    "verified": False},
+    "qwen":   {"binary": "qwen",   "make_cmd": _qwen_cmd,   "verified": False},
+}
+
+DETECTION_ORDER = ["claude", "codex", "kimi", "glm", "qwen"]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Backend selection
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _detect_cli() -> Optional[str]:
+    """Honor $COMMANDO_LLM if set; otherwise return the first installed CLI in
+    DETECTION_ORDER."""
+    forced = os.environ.get("COMMANDO_LLM")
+    if forced:
+        if forced not in AGENT_CLIS:
+            raise RuntimeError(
+                f"$COMMANDO_LLM={forced} but commando doesn't know this CLI yet. "
+                f"Known: {', '.join(AGENT_CLIS)}. PRs welcome to add it."
+            )
+        return forced
+    for name in DETECTION_ORDER:
+        if shutil.which(AGENT_CLIS[name]["binary"]):
+            return name
     return None
 
 
-def _call_via_sdk(api_key: str, system_prompt: str, user_message: str,
-                  model: str, max_tokens: int) -> dict:
+def _load_anthropic_key(agent_dir: Path) -> Optional[str]:
+    env_key = os.environ.get("ANTHROPIC_API_KEY")
+    if env_key:
+        return env_key
+    cred = agent_dir / "credentials" / "anthropic.yaml"
+    if cred.exists():
+        try:
+            import yaml  # type: ignore
+            return (yaml.safe_load(cred.read_text(encoding="utf-8")) or {}).get("api_key")
+        except Exception:
+            return None
+    return None
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Backend invocations
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _call_via_cli(cli_name: str, system: str, user: str, model: str) -> dict:
+    spec = AGENT_CLIS[cli_name]
+    cmd = spec["make_cmd"](system, user, model)
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"{cli_name} CLI timed out after 180s")
+
+    if r.returncode != 0:
+        err = (r.stderr or r.stdout).strip()
+        if not spec["verified"]:
+            raise RuntimeError(
+                f"{cli_name} CLI failed (rc={r.returncode}): {err[:300]}\n"
+                f"Note: {cli_name} integration is community-stubbed. If the flag\n"
+                f"      structure differs in your version, please PR commando/runtime/llm.py."
+            )
+        raise RuntimeError(f"{cli_name} CLI failed (rc={r.returncode}): {err[:400]}")
+
+    return {
+        "backend": f"{cli_name}-cli",
+        "response_text": r.stdout.strip(),
+        "model": f"{model} (via {cli_name} CLI)",
+        "input_tokens": 0,    # CLI mode doesn't expose token counts
+        "output_tokens": 0,
+        "stop_reason": "end_turn",
+    }
+
+
+def _call_via_anthropic_sdk(api_key: str, system: str, user: str, model: str,
+                            max_tokens: int) -> dict:
     try:
         from anthropic import Anthropic  # type: ignore
     except ImportError:
         raise RuntimeError("anthropic SDK not installed. Run: pip install anthropic")
-
     client = Anthropic(api_key=api_key)
     msg = client.messages.create(
         model=model,
         max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_message}],
+        system=system,
+        messages=[{"role": "user", "content": user}],
     )
     response_text = msg.content[0].text if msg.content else ""
     return {
@@ -58,33 +158,9 @@ def _call_via_sdk(api_key: str, system_prompt: str, user_message: str,
     }
 
 
-def _call_via_claude_cli(system_prompt: str, user_message: str, model: str) -> dict:
-    if shutil.which("claude") is None:
-        raise RuntimeError("`claude` CLI not in PATH")
-
-    cmd = [
-        "claude", "-p", user_message,
-        "--append-system-prompt", system_prompt,
-        "--model", model,
-    ]
-    try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-    except subprocess.TimeoutExpired:
-        raise RuntimeError("claude CLI timed out after 120s")
-
-    if r.returncode != 0:
-        raise RuntimeError(f"claude CLI failed (rc={r.returncode}): {(r.stderr or r.stdout).strip()[:400]}")
-
-    return {
-        "backend": "claude-cli",
-        "response_text": r.stdout.strip(),
-        "model": f"{model} (via claude CLI)",
-        # claude CLI does not expose token counts in --print mode
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "stop_reason": "end_turn",
-    }
-
+# ──────────────────────────────────────────────────────────────────────────────
+# Public entry
+# ──────────────────────────────────────────────────────────────────────────────
 
 def call_skill(
     *,
@@ -94,16 +170,27 @@ def call_skill(
     model: str = "claude-opus-4-7",
     max_tokens: int = 2048,
 ) -> dict:
-    """Try Anthropic SDK first; fall back to `claude` CLI if available."""
-    api_key = _load_api_key(agent_dir)
-    if api_key:
-        return _call_via_sdk(api_key, system_prompt, user_message, model, max_tokens)
+    """Resolution order:
+        1. Agent CLI in PATH (claude / codex / kimi / glm / qwen) — user's choice
+        2. Anthropic SDK fallback for headless cron when ANTHROPIC_API_KEY set
+        3. Fail with clear instructions
+    """
+    cli = _detect_cli()
+    if cli:
+        return _call_via_cli(cli, system_prompt, user_message, model)
 
-    if shutil.which("claude"):
-        return _call_via_claude_cli(system_prompt, user_message, model)
+    # No CLI found → only viable path is API key for headless cron
+    api_key = _load_anthropic_key(agent_dir)
+    if api_key:
+        return _call_via_anthropic_sdk(api_key, system_prompt, user_message, model, max_tokens)
 
     raise RuntimeError(
-        "no LLM backend available. Either:\n"
-        "  1. export ANTHROPIC_API_KEY=sk-ant-…   (or write to credentials/anthropic.yaml)\n"
-        "  2. install Claude Code:  https://docs.claude.com/en/docs/claude-code/getting-started"
+        "no LLM backend available.\n"
+        "  · Easiest: install an agent CLI you already use:\n"
+        "       Claude Code:  https://docs.claude.com/en/docs/claude-code\n"
+        "       OpenAI Codex: https://github.com/openai/codex\n"
+        "       Kimi / GLM / Qwen CLIs: see their respective docs\n"
+        "  · For headless cron use (no interactive login):\n"
+        "       export ANTHROPIC_API_KEY=sk-ant-…\n"
+        "       (or write to my-agent/credentials/anthropic.yaml)"
     )

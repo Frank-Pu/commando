@@ -163,13 +163,47 @@ def dashboard(port, no_browser, agent_dir):
 @cli.command()
 @click.option("--task", "task_id", required=True, help="Task id from schedule.yaml.")
 @click.option("--agent-dir", "target", default="./my-agent")
-@click.option("--apply", is_flag=True, help="Actually call Anthropic API (default: dry-run).")
+@click.option("--apply", is_flag=True, help="Actually invoke the LLM (default: dry-run).")
 @click.option("--inputs", default=None, help="Override user message sent to the Skill.")
 def run(task_id, target, apply, inputs):
     """Execute a task from schedule.yaml (one-shot, manual trigger)."""
     from commando.run import run as _run
 
     _run(target, task_id, apply, inputs)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# commando schedule — install/list/uninstall OS-level cron triggers
+# ──────────────────────────────────────────────────────────────────────────────
+@cli.group(help="Translate schedule.yaml → OS scheduler (launchd on macOS).")
+def schedule():
+    pass
+
+
+@schedule.command("install", help="Install cron tasks from schedule.yaml as launchd jobs.")
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("--apply", is_flag=True, help="Actually write plists + call launchctl (default: dry-run).")
+def schedule_install(target, apply):
+    from commando.schedule_install import install as _install
+
+    _install(target, apply)
+
+
+@schedule.command("list", help="List installed launchd jobs for this agent.")
+@click.option("--agent-dir", "target", default="./my-agent")
+def schedule_list(target):
+    from commando.schedule_install import list_jobs as _list
+
+    _list(target)
+
+
+@schedule.command("uninstall", help="Remove installed launchd jobs for this agent.")
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("--apply", is_flag=True, help="Actually call launchctl bootout + delete plists (default: dry-run).")
+def schedule_uninstall(target, apply):
+    from commando.schedule_install import uninstall as _uninstall
+
+    _uninstall(target, apply)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
