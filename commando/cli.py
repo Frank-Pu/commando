@@ -46,26 +46,33 @@ def cli():
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# commando onboard — kick off Onboarding skill
+# commando init — bootstrap a Configuration from a packaged sample
 # ──────────────────────────────────────────────────────────────────────────────
 @cli.command()
-def onboard():
-    """Start Onboarding (talk to Claude Code, produce ./my-agent/ Configuration)."""
-    skill_md = SKILLS / "onboarding" / "SKILL.md"
-    _print_panel(
-        "Onboarding — start a 25-90 min conversation to produce ./my-agent/",
-        [
-            f"Skill file: {skill_md.relative_to(ROOT) if skill_md.is_relative_to(ROOT) else skill_md}",
-            "",
-            "1. cd ~/commando  (or wherever this repo lives)",
-            "2. claude  ← opens Claude Code in this dir",
-            "3. Tell it:  \"Load skills/onboarding/SKILL.md and start Onboarding.\"",
-            "4. Have a conversation — Express mode ≈ 25 min; Full mode ≈ 90 min",
-            "5. Result lands in ./my-agent/ — a real, commit-able Configuration",
-            "",
-            "v0.2 will auto-invoke `claude` for you. v0.1 is manual.",
-        ],
-    )
+@click.argument("dir", default="./my-agent", required=False)
+@click.option("--template", default="lemingle-growth-partner",
+              help="Sample template slug (or 'list' to see available).")
+@click.option("--force", is_flag=True, help="Overwrite existing files without asking.")
+def init(dir, template, force):
+    """Bootstrap a Configuration directory from a packaged sample."""
+    from commando.init import run as _run
+
+    _run(dir, template, force)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# commando onboard — launch Onboarding (Claude Code)
+# ──────────────────────────────────────────────────────────────────────────────
+@cli.command()
+@click.option("--target", default="./my-agent", help="Output Configuration directory.")
+@click.option("--mode", type=click.Choice(["express", "full"]), default="express",
+              help="Express ≈ 25 min, full ≈ 60-120 min.")
+@click.option("--force", is_flag=True, help="Skip the 'target exists' confirmation.")
+def onboard(target, mode, force):
+    """Start Onboarding — talk to Claude Code, produce a real Configuration."""
+    from commando.onboard import run as _run
+
+    _run(target, mode, force)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
