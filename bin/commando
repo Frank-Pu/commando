@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# commando — execute the CLI module without requiring pip install
+# put this dir on your PATH:  export PATH="$PATH:$(pwd)/bin"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_DIR="$( dirname "$SCRIPT_DIR" )"
+exec python3 "-c" "import sys; sys.path.insert(0, '$REPO_DIR'); from commando.cli import main; main()" "$@"

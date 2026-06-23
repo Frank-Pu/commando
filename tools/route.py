@@ -90,46 +90,61 @@ def render_template(tpl: str, event: dict, defaults: dict) -> str:
 
 def build_card(text: str, card_actions: Optional[dict], agent_name: str,
                event: dict, defaults: dict) -> dict:
-    """V2 interactive card schema — matches atu's send_card pattern."""
-    elements = [{"tag": "markdown", "content": text}]
+    """V2 interactive card — atu pattern: buttons as top-level elements with `behaviors`."""
+    elements = []
 
-    if card_actions:
-        btns = []
-        for kind in ("primary", "secondary"):
-            spec = card_actions.get(kind)
-            if not spec:
-                continue
-            label = render_template(spec.get("text", "Open"), event, defaults)
-            url = render_template(spec.get("uri", "#"), event, defaults)
-            btns.append({
-                "tag": "button",
-                "text": {"tag": "plain_text", "content": label},
-                "type": "primary" if kind == "primary" else "default",
-                "url": url,
-            })
-        if btns:
-            elements.append({"tag": "action", "actions": btns})
+    # 主按钮放顶（最重要的 CTA 30 秒可见）
+    if card_actions and card_actions.get("primary"):
+        spec = card_actions["primary"]
+        elements.append({
+            "tag": "button",
+            "text": {"tag": "plain_text",
+                     "content": render_template(spec.get("text", "Open"), event, defaults)},
+            "type": "primary",
+            "behaviors": [{"type": "open_url",
+                           "default_url": render_template(spec.get("uri", "#"), event, defaults)}],
+        })
+        elements.append({"tag": "hr"})
+
+    # markdown 正文
+    elements.append({"tag": "markdown", "content": text})
+
+    # 副链接（markdown 形式，不抢主按钮焦点）
+    if card_actions and card_actions.get("secondary"):
+        spec = card_actions["secondary"]
+        label = render_template(spec.get("text", "Details"), event, defaults)
+        url = render_template(spec.get("uri", "#"), event, defaults)
+        if url and url != "#":
+            elements.append({"tag": "hr"})
+            elements.append({"tag": "markdown", "content": f"📋 [{label}]({url})"})
+
+    # template 色：waiting → yellow，done → green，其他 → orange
+    level = event.get("level", "im")
+    template_color = {"waiting": "yellow", "done": "green", "im": "blue"}.get(level, "orange")
+    title_icon = {"waiting": "⏸", "done": "✅", "im": "🔔"}.get(level, "🔔")
 
     return {
         "schema": "2.0",
-        "config": {"update_multi": True, "wide_screen_mode": True},
         "header": {
-            "title": {"tag": "plain_text", "content": f"🔔 {agent_name}"},
-            "template": "orange",
+            "title": {"tag": "plain_text", "content": f"{title_icon} {agent_name}"},
+            "template": template_color,
         },
         "body": {"elements": elements},
     }
 
 
 def send_to_feishu(chat_id: str, card: dict, profile: Optional[str], dry: bool) -> bool:
-    cmd = [
-        "lark-cli", "im", "+messages-send",
+    # lark-cli flag order: `--profile` is a GLOBAL flag, must come before subcommand
+    cmd = ["lark-cli"]
+    if profile:
+        cmd += ["--profile", profile]
+    cmd += [
+        "im", "+messages-send",
+        "--as", "bot",
         "--chat-id", chat_id,
         "--msg-type", "interactive",
         "--content", json.dumps(card, ensure_ascii=False),
     ]
-    if profile:
-        cmd += ["--profile", profile]
 
     if dry:
         compact_cmd = " ".join(cmd[:6])

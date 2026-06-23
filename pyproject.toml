@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commando"
+version = "0.1.0"
+description = "Runtime is commodity. Configuration is the moat. — AI digital employee Configuration framework."
+readme = "README.md"
+authors = [{ name = "Frank Pu" }]
+license = { text = "MIT" }
+requires-python = ">=3.9"
+
+dependencies = [
+    "click>=8.0",
+    "pyyaml>=6.0",
+]
+
+keywords = ["ai-agents", "agent-framework", "digital-employee", "claude", "llm", "configuration"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/Frank-Pu/commando"
+Repository = "https://github.com/Frank-Pu/commando"
+Issues = "https://github.com/Frank-Pu/commando/issues"
+
+[project.scripts]
+commando = "commando.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["commando*"]
+exclude = ["my-agent*", "dashboard*", "tools*", "examples*", "skills*", "playbooks*", "docs*", "connectors*"]
