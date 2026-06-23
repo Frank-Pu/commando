@@ -43,7 +43,7 @@ def _print_skill_summary() -> None:
     click.echo()
 
 
-def run(target: str, mode: str, force: bool) -> None:
+def run(target: str, mode: str, force: bool, skip_go_live: bool = False) -> None:
     click.echo()
     click.secho("  commando onboard", fg="cyan", bold=True)
     click.secho("  " + "─" * 60, fg="bright_black")
@@ -117,6 +117,32 @@ def run(target: str, mode: str, force: bool) -> None:
     except KeyboardInterrupt:
         pass
     click.echo()
-    click.echo(f"  When Claude Code finishes, check {target_path} for the new Configuration.")
-    click.echo("  Then:  commando dashboard")
+    click.secho("  Claude Code exited.", fg="cyan")
     click.echo()
+
+    # ── Step 4 · auto-chain into go-live ─────────────────────────────────────
+    if skip_go_live:
+        click.echo(f"  Configuration in: {target_path}")
+        click.echo("  Run later:  commando go-live")
+        click.echo()
+        return
+
+    schedule_yml = target_path / "schedule.yaml"
+    charter = target_path / "charter.md"
+    if not (schedule_yml.exists() and charter.exists()):
+        click.secho("  ! Configuration looks incomplete — skipping go-live.", fg="yellow")
+        click.echo(f"    Looked for: {charter} and {schedule_yml}")
+        click.echo("    Re-run Onboarding inside Claude Code, or run `commando go-live` manually.")
+        click.echo()
+        return
+
+    click.echo("  Step 4 · Closeout — IM connect + launchd install")
+    click.echo()
+    if not click.confirm("    Run `commando go-live` now to finish setup?", default=True):
+        click.echo()
+        click.echo("    When ready:  commando go-live")
+        click.echo()
+        return
+
+    from commando.go_live import run as _run_go_live
+    _run_go_live(str(target_path))

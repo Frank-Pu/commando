@@ -12,6 +12,7 @@ import os
 import platform
 import subprocess
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
@@ -82,6 +83,44 @@ PLIST_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 </dict>
 </plist>
 """
+
+
+def _py_weekday_from_cron(cron_dow: int) -> int:
+    """cron: 0=Sun, 1=Mon..6=Sat (also 7=Sun). python: Mon=0..Sun=6."""
+    if cron_dow == 7:
+        cron_dow = 0
+    return (cron_dow - 1) % 7
+
+
+def next_firing(parsed: dict, now: Optional[datetime] = None) -> Optional[datetime]:
+    """Iterate forward minute by minute (max 31 days) to find next firing."""
+    now = now or datetime.now()
+    candidate = now.replace(second=0, microsecond=0) + timedelta(minutes=1)
+    for _ in range(60 * 24 * 31):
+        m, h, d, mo, w = (parsed.get(k) for k in ("minute", "hour", "day", "month", "weekday"))
+        if (m is None or candidate.minute == m) \
+           and (h is None or candidate.hour == h) \
+           and (d is None or candidate.day == d) \
+           and (mo is None or candidate.month == mo) \
+           and (w is None or candidate.weekday() == _py_weekday_from_cron(w)):
+            return candidate
+        candidate += timedelta(minutes=1)
+    return None
+
+
+def _format_next_firing(dt: Optional[datetime]) -> str:
+    if dt is None:
+        return "  (next firing > 31 days away — check cron expression)"
+    delta = dt - datetime.now()
+    if delta.total_seconds() < 60:
+        rel = "in <1 min"
+    elif delta.days >= 1:
+        rel = f"in {delta.days}d {delta.seconds // 3600}h"
+    elif delta.seconds >= 3600:
+        rel = f"in {delta.seconds // 3600}h {(delta.seconds % 3600) // 60}m"
+    else:
+        rel = f"in {delta.seconds // 60}m"
+    return f"  next firing: {dt:%a %b %d %H:%M}  ({rel})"
 
 
 def cron_to_calendar_interval(parsed: dict) -> str:
@@ -156,6 +195,7 @@ def _launchd_install_task(agent_dir: Path, task: dict, repo_dir: Path, dry: bool
         click.secho(f"    ! launchctl bootstrap failed for {task_id}: {r.stderr.strip()[:200]}", fg="yellow")
         return False
     click.secho(f"    ✓ installed {_launchd_label(agent_dir, task_id)}", fg="green")
+    click.secho(f"    {_format_next_firing(next_firing(parsed))}", fg="bright_black")
     return True
 
 

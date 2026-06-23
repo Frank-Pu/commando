@@ -173,6 +173,31 @@ def run(task_id, target, apply, inputs):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# commando go-live — post-onboarding closeout (validate + IM + schedule)
+# ──────────────────────────────────────────────────────────────────────────────
+@cli.command("go-live", help="Post-onboarding closeout: validate, set up IM, install launchd.")
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("-y", "--yes", is_flag=True, help="Accept all prompts (non-interactive).")
+@click.option("--skip-im", is_flag=True, help="Skip Feishu IM setup.")
+@click.option("--skip-schedule", is_flag=True, help="Skip launchd install.")
+def go_live(target, yes, skip_im, skip_schedule):
+    from commando.go_live import run as _run
+
+    _run(target, yes=yes, skip_im=skip_im, skip_schedule=skip_schedule)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# commando status — quick health snapshot
+# ──────────────────────────────────────────────────────────────────────────────
+@cli.command(help="One-glance health check: configuration, connectors, schedule, recent activity.")
+@click.option("--agent-dir", "target", default="./my-agent")
+def status(target):
+    from commando.status import run as _run
+
+    _run(target)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # commando schedule — install/list/uninstall OS-level cron triggers
 # ──────────────────────────────────────────────────────────────────────────────
 @cli.group(help="Translate schedule.yaml → OS scheduler (launchd on macOS).")
