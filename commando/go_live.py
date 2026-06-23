@@ -78,7 +78,8 @@ def _check_llm_backend() -> Tuple[str, str]:
     """Return (status, detail). status in {'cli', 'sdk', 'none'}."""
     import os
     for binary, label in [("claude", "Claude Code"), ("codex", "Codex"),
-                          ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen")]:
+                          ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen"),
+                          ("doubao", "Doubao"), ("minimax", "MiniMax")]:
         if shutil.which(binary):
             return "cli", f"{label} CLI ({binary})"
     if os.environ.get("ANTHROPIC_API_KEY"):

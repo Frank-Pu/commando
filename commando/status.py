@@ -63,7 +63,8 @@ def run(target: str) -> None:
     click.secho("  LLM backend (Runtime is commodity)", bold=True)
     found_cli = None
     for binary, name in [("claude", "Claude Code"), ("codex", "Codex"),
-                          ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen")]:
+                          ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen"),
+                          ("doubao", "Doubao"), ("minimax", "MiniMax")]:
         if shutil.which(binary):
             found_cli = (binary, name)
             break

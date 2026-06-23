@@ -1,6 +1,6 @@
 # commando
 
-> Configure an AI digital employee in 25 minutes. Runs on **your** Claude Code / Codex / Kimi / GLM CLI — commando never picks an LLM for you.
+> Configure an AI digital employee in 25 minutes. Works with whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax. commando never picks an LLM for you.
 >
 > **Runtime is commodity. Configuration is the moat.**
 
@@ -33,7 +33,15 @@ git clone https://github.com/Frank-Pu/commando.git ~/.commando
 export PATH="$HOME/.commando/bin:$PATH"   # 或 append 到 ~/.zshrc / ~/.bashrc
 ```
 
-依赖：Python 3.9+ · git · 一个 agent CLI（claude / codex / kimi / glm / qwen 任一）
+依赖：Python 3.9+ · git · 一个 AI 工具（详见下表）
+
+### 你的 AI 工具怎么接进来
+
+| 场景 | 用什么 |
+|---|---|
+| **Onboarding 对话** · ad-hoc 聊天 | **任意 AI 工具**：CLI（Claude Code, Codex, Kimi, GLM, Qwen, Doubao, MiniMax）或 IDE（Cursor, Windsurf, VS Code Copilot, JetBrains AI…）都行——它只是读 `skills/onboarding/SKILL.md` 跟你聊 |
+| **定时 task（launchd / systemd 触发）** | 需要 PATH 里有 CLI（OS 调度器只能调 CLI），或 `ANTHROPIC_API_KEY` 走 SDK 兜底 |
+| **强制指定** | `export COMMANDO_LLM=kimi`（任一注册的 CLI 名） |
 
 验证：
 
@@ -126,8 +134,8 @@ Recent activity (episodic memory)
 
 ## 设计原则
 
-1. **Runtime 故意做小**。Runtime = 一个 LLM CLI 调用 + episodic 写盘。不到 200 行 Python。
-2. **不绑模型**。`claude` / `codex` / `kimi` / `glm` / `qwen` CLI 任一在 PATH 里就用。`$COMMANDO_LLM=kimi` 强制指定。
+1. **Runtime 故意做小**。Runtime = 一个 LLM 调用 + episodic 写盘。不到 200 行 Python。
+2. **不绑模型 / 不绑工具表面**。Onboarding 在你已经在用的 AI 工具里发生——CLI 或 IDE 都行（Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax…）。定时 task 因为是 launchd 调起，需要 CLI 在 PATH 或 API key。`$COMMANDO_LLM=kimi` 可强制指定。
 3. **不绑调度器**。`schedule.yaml` 翻译成 launchd plist / systemd timer，由 **OS 驱动**触发——commando 不写自己的 daemon。
 4. **不绑 backend**。`commando connect <platform>` 让你本地 agent 生成 driver 代码，留在你自己仓库。
 5. **不绑 UI**。Scheduler 看板物化到你协作平台原生视图（飞书 bitable / Notion database / ClickUp）。本地 `commando dashboard` 是裸 hello-world 用的。
@@ -165,7 +173,7 @@ Recent activity (episodic memory)
 1. **新 playbook**——你的角色（财务 / 客服 / 法务 / 投研 / 教育 …）没有专属 playbook，把经验沉淀成 PR。写之前请先读 [docs/playbook-vs-skill-boundary.md](docs/playbook-vs-skill-boundary.md)。
 2. **Skill 提交 Registry**——PR 改 [skills.json](skills.json) 加一条。
 3. **Backend driver 范本**——把你本地 `commando connect` 生成的 driver 清理一下 PR 回来。
-4. **新 agent CLI 适配**——`commando/runtime/llm.py` 里加 codex / kimi / glm / qwen 的 verified 命令格式（目前是 stub，社区欢迎补完）。
+4. **新 agent CLI 适配**——`commando/runtime/llm.py` 里加 codex / kimi / glm / qwen / doubao / minimax 的 verified 命令格式（目前是 stub，社区欢迎补完）。
 
 **不需要的贡献**：自建 GUI / 新增 Runtime 抽象 / 和某个 SaaS 深度绑定。这些违反 commando 设计原则。
 

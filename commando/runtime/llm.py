@@ -10,6 +10,8 @@ Detection order (first found wins, override with $COMMANDO_LLM):
     kimi     — Moonshot Kimi CLI               (community)
     glm      — Zhipu GLM CLI                   (community)
     qwen     — Alibaba Qwen CLI                (community)
+    doubao   — ByteDance Doubao CLI            (community)
+    minimax  — MiniMax CLI                     (community)
 
 For **headless cron** use where no interactive CLI is logged in, set
 ANTHROPIC_API_KEY (env or credentials/anthropic.yaml) and we fall back to
@@ -56,15 +58,25 @@ def _qwen_cmd(system: str, user: str, model: str) -> list:
     return ["qwen", "chat", "--system", system, user, "--model", model]
 
 
+def _doubao_cmd(system: str, user: str, model: str) -> list:
+    return ["doubao", "chat", "--system", system, user, "--model", model]
+
+
+def _minimax_cmd(system: str, user: str, model: str) -> list:
+    return ["minimax", "chat", "--system", system, user, "--model", model]
+
+
 AGENT_CLIS: Dict[str, dict] = {
-    "claude": {"binary": "claude", "make_cmd": _claude_cmd, "verified": True},
-    "codex":  {"binary": "codex",  "make_cmd": _codex_cmd,  "verified": False},
-    "kimi":   {"binary": "kimi",   "make_cmd": _kimi_cmd,   "verified": False},
-    "glm":    {"binary": "glm",    "make_cmd": _glm_cmd,    "verified": False},
-    "qwen":   {"binary": "qwen",   "make_cmd": _qwen_cmd,   "verified": False},
+    "claude":  {"binary": "claude",  "make_cmd": _claude_cmd,  "verified": True},
+    "codex":   {"binary": "codex",   "make_cmd": _codex_cmd,   "verified": False},
+    "kimi":    {"binary": "kimi",    "make_cmd": _kimi_cmd,    "verified": False},
+    "glm":     {"binary": "glm",     "make_cmd": _glm_cmd,     "verified": False},
+    "qwen":    {"binary": "qwen",    "make_cmd": _qwen_cmd,    "verified": False},
+    "doubao":  {"binary": "doubao",  "make_cmd": _doubao_cmd,  "verified": False},
+    "minimax": {"binary": "minimax", "make_cmd": _minimax_cmd, "verified": False},
 }
 
-DETECTION_ORDER = ["claude", "codex", "kimi", "glm", "qwen"]
+DETECTION_ORDER = ["claude", "codex", "kimi", "glm", "qwen", "doubao", "minimax"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -189,7 +201,7 @@ def call_skill(
         "  · Easiest: install an agent CLI you already use:\n"
         "       Claude Code:  https://docs.claude.com/en/docs/claude-code\n"
         "       OpenAI Codex: https://github.com/openai/codex\n"
-        "       Kimi / GLM / Qwen CLIs: see their respective docs\n"
+        "       Kimi / GLM / Qwen / Doubao / MiniMax CLIs: see their respective docs\n"
         "  · For headless cron use (no interactive login):\n"
         "       export ANTHROPIC_API_KEY=sk-ant-…\n"
         "       (or write to my-agent/credentials/anthropic.yaml)"
