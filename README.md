@@ -1,194 +1,186 @@
 # commando
 
-> ⚠️ **0.x · docs-first 阶段** — 设计骨架完整，flagship Onboarding skill 可手动运行；`commando` CLI 实现等社区反馈定优先级。详见 README 末尾"当前阶段坦诚说"。
-
-> 把 AI 角色配置变成一个工程问题，而不是 prompt 玄学。
+> Configure an AI digital employee in 25 minutes. Runs on **your** Claude Code / Codex / Kimi / GLM CLI — commando never picks an LLM for you.
 >
-> **Runtime 是商品，Configuration 是护城河。**
+> **Runtime is commodity. Configuration is the moat.**
 
-commando 是一个开源的**数字员工 Configuration 框架**。它不在 Runtime 那一层
-和 Claude Agent SDK / Pydantic AI / LangGraph 竞争——commando 故意把
-Runtime 做得最小，把全部精力放在让 **Configuration 可被生成、版本化、
-分发、复用、评测**上。
+commando is an open-source **Configuration framework** for digital employees. It does not compete at the Runtime layer with Claude Agent SDK / Pydantic AI / LangGraph — commando keeps Runtime deliberately tiny and invests everything in making **Configuration generatable, versionable, shareable, and inspectable**.
 
-## 60 秒上手理解
+```
+你 → commando onboard         ← 25 分钟在你已有的 CLI 里走 Discovery / Calibration
+       ↓
+       ./my-agent/            ← charter / skills / schedule.yaml 在磁盘上是你的
+       ↓
+   commando go-live           ← 连飞书 + 装 launchd
+       ↓
+   第二天 8:00 你的飞书收到第一张卡片
+```
 
-| 你想 | commando 给你 |
-|---|---|
-| 为自己的产品/团队造一个"数字员工" | 跑 `commando onboard`——2 小时对话之后磁盘上多一个 v0.1 可跑的 Configuration 目录 |
-| 不绑死任何模型 / 平台 | 用你已经付费的 Claude Code / Codex / Kimi 跑 Onboarding；用你已经在用的飞书 / Notion / 钉钉做 Workbench |
-| 不自建 dashboard / UI | scheduler 看板物化到你已在用的协作平台原生视图（飞书 bitable / Notion database / ClickUp...） |
-| 接入新平台不等官方支持 | `commando connect <platform>`——让你本地的 agent 当场生成 backend driver，commit 到你自己仓库 |
-| 看一个真实活着的例子 | [examples/lemingle-growth-partner/](examples/lemingle-growth-partner/)——服务 [LeMingle](https://lemingle.com) 跑了 6+ 个月 |
+---
 
-## 0.x 阶段在做什么
-
-commando 当前是 **docs-first 阶段**——设计骨架已成形，工程实现还在等社区
-反馈定优先级。当前仓库的核心交付物：
-
-### Spec 文档
-
-- [docs/charter.md](docs/charter.md) — 数字员工的宪法
-- [docs/scheduler.md](docs/scheduler.md) — 数字员工的产品表面（一张表两种 row）
-- [docs/skill.md](docs/skill.md) — Skill 的格式 + commando 扩展（基于 Claude Code Skills）
-- [docs/memory.md](docs/memory.md) — 三层记忆：Working / Episodic / Semantic
-- [docs/event-bus.md](docs/event-bus.md) — Episodic 作为 event bus + IM 推送 routing（dashboard Activity + IM 同源）
-- [docs/capabilities.md](docs/capabilities.md) — 能力词典（跨 backend 通用语义）
-- [docs/connectors.md](docs/connectors.md) — Backend + Source 连接层
-- [docs/backend-driver.md](docs/backend-driver.md) — Driver 怎么由你本地 agent 生成
-- [docs/playbook-vs-skill-boundary.md](docs/playbook-vs-skill-boundary.md) — 贡献 playbook 前必读
-- [docs/example-onboarding-transcript.md](docs/example-onboarding-transcript.md) — **真实 Onboarding 全程对话记录**（最好的 demo 素材）
-
-### 旗舰 Skill
-
-- [skills/onboarding/SKILL.md](skills/onboarding/SKILL.md) — Onboarding skill：
-  3 阶段对话产出 v0.1 Configuration
-
-### Playbooks
-
-- [playbooks/growth-partner.md](playbooks/growth-partner.md) — 独立产品增长合伙人
-  （来自 atu 半年实跑沉淀）
-- [playbooks/_generic.md](playbooks/_generic.md) — 兜底
-- 其他职能（财务 / 客服 / 投研 / 教育 …）—— 欢迎 PR
-
-### 示例 Configuration
-
-- [examples/lemingle-growth-partner/](examples/lemingle-growth-partner/) — 阿土
-  ＝ 服务 LeMingle 的真实数字员工，跑了 6+ 个月
-
-### Skill Registry
-
-- [skills.json](skills.json) — 社区共享 Skill 索引
-
-## 设计原则
-
-1. **Runtime 故意做小**。等 Runtime 落地你会发现它就是 500-1000 行 Python：
-   Planner + Workbench + Memory + Skill runner + Capability registry。
-2. **不绑模型**。用户用自己的 Claude Code / Codex / Kimi / GLM / Qwen CLI
-   跑 Onboarding 和日常 Skill。
-3. **不绑 backend**。`commando connect <platform>` 让用户本地 agent 生成
-   driver 代码，留在用户仓库——commando 不维护多个官方 driver。
-4. **不绑 UI**。Scheduler 看板物化到协作平台原生视图。本地 `commando dashboard`
-   只做"裸 hello-world"用的迷你 HTML。
-5. **复用 Claude Code Skills 格式**。commando Skill = Claude Code Skill +
-   5 个 commando frontmatter 扩展。
-
-## 数字员工能力的三层（始终持有的心智模型）
-
-| 层 | 性质 | 由谁驱动 | 是否需要 Skill |
-|---|---|---|---|
-| **Charter context** | 常驻背景，每次调用自动注入 | Charter | 不需要 |
-| **Structured work** | 有 cron / trigger 的循环活 | Schedule + Skill | **需要 Skill** |
-| **Ad-hoc dialogue** | 用户随时 @ 它聊任何事 | IM + Charter + LLM base | 不需要 Skill |
-
-这层心智模型搞错的最常见反模式：把所有能力都往第 2 层塞，导致 Configuration
-误以为很重——其实大部分对话能力在第 3 层就免费拿到。
-
-## 怎么用
-
-### 安装
+## Install (30 秒)
 
 ```bash
-git clone https://github.com/Frank-Pu/commando.git
-cd commando
+curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh
+```
 
-# 方式 A · pip 用户（推荐，pip ≥ 21.3）
-pip install -e .
+会克隆仓库到 `~/.commando` 并把 `~/.commando/bin` 加进 PATH。
 
-# 方式 B · 不想 pip install 的快速试用
-export PATH="$PWD/bin:$PATH"
+手动安装：
 
-# 验证
+```bash
+git clone https://github.com/Frank-Pu/commando.git ~/.commando
+export PATH="$HOME/.commando/bin:$PATH"   # 或 append 到 ~/.zshrc / ~/.bashrc
+```
+
+依赖：Python 3.9+ · git · 一个 agent CLI（claude / codex / kimi / glm / qwen 任一）
+
+验证：
+
+```bash
 commando --version    # commando, version 0.1.0
 commando --help
 ```
 
-依赖：Python 3.9+ · click · pyyaml
+---
 
-### 跑起来
+## 你的前 25 分钟
 
 ```bash
-# 1. Onboarding（25-90 分钟对话，产出 ./my-agent/ Configuration）
 commando onboard
-# 当前 v0.1 = 引导你在 Claude Code 里手动加载 SKILL.md
-# v0.2 会自动 invoke `claude` CLI
-
-# 2. 启动 dashboard（浏览器自动打开）
-commando dashboard
-
-# 3. 配 Feishu IM 推送（一次性 ~15 分钟）
-commando connect im-feishu       # 当前打印 docs/feishu-im-setup.md 路径，v0.2 自动化
-
-# 4. 发一张测试 IM 卡片
-commando route --demo waiting --apply
-
-# 5. 把 Configuration materialize 到飞书（Wiki + Bitable）
-commando materialize --backend feishu          # dry-run
-commando materialize --backend feishu --apply  # 真执行
-
-# 6. Runtime（v0.2 上线）
-commando run --task morning_sense
 ```
 
-完整子命令清单：`commando --help`
+发生什么：
 
-**今天就能用**：
+| Step | 时间 | 内容 |
+|---|---|---|
+| 1 | 即时 | commando 检测你的 agent CLI（claude / codex / kimi / glm / qwen） |
+| 2 | ~25 min | 在你已有的 CLI 里走 **Phase 0 Role Scoping → Phase 1 Discovery → Phase 2 Calibration → Phase 3 Confirmation** |
+| 3 | 即时 | 磁盘上多一个 `./my-agent/`：`charter.md`、`skills/`、`schedule.yaml`、`.onboarding/` |
+| 4 | ~5 min | onboard 退出后自动跳 **`commando go-live`**：校验配置 → 连飞书 IM → 装 launchd → "You're live" |
 
-1. 用 Claude Code 在本仓库根目录打开
-2. 把 [skills/onboarding/SKILL.md](skills/onboarding/SKILL.md) 当作 system
-   指令载入
-3. 告诉它"开始 Onboarding，输出目录 ./my-agent/"
-4. 跟它聊 60-120 分钟（Express 模式 25-30 分钟）
-5. 拿到一份可跑的 Configuration 骨架
+第二天到点：你飞书收到第一张卡片。
 
-**也可以先看看 dashboard 长什么样**：
+---
+
+## 一眼看清自己的数字员工
 
 ```bash
-pip install pyyaml          # 唯一依赖
-python dashboard/server.py  # 浏览器自动打开 http://127.0.0.1:7878
+commando status
 ```
 
-teal + coral 配色 / EN-中切换 / dark mode / 审稿按钮跳本地 markdown。
-详见 [dashboard/README.md](dashboard/README.md)。
+```
+Configuration
+  ✓  charter.md  (7969 bytes)
+  ✓  skills: 8 total, 5 active
+  ✓  schedule.yaml: 6 cron, 3 manual
 
-## 与 atu 的关系
+LLM backend (Runtime is commodity)
+  ✓  agent CLI: Claude Code (/opt/homebrew/bin/claude)
 
-[atu](https://github.com/Frank-Pu/atu) 是 commando 的 dogfood——一个跑了
-6+ 个月的真实"LeMingle 增长合伙人"数字员工。atu **先于** commando 存在，
-commando 反过来从 atu 的设计经验中抽象出来。
+Connectors
+  ✓  Feishu IM: my-agent/credentials/feishu.yaml
 
-atu 不会被重写进 commando——它独立演化，作为 commando 的官方参考
-Configuration（[examples/lemingle-growth-partner/](examples/lemingle-growth-partner/)）。
+OS scheduler
+  ✓  6 launchd job(s) installed
+
+  Upcoming firings:
+  · Tue Jun 24 08:00   morning_sense
+  · Tue Jun 24 11:00   xhs_draft_tue
+  · Fri Jun 27 11:00   xhs_draft_fri
+
+Recent activity (episodic memory)
+  ✓  4 event(s) today
+```
+
+---
+
+## 子命令清单
+
+| 命令 | 干嘛 |
+|---|---|
+| `commando onboard` | 在你的 CLI 里走 Onboarding 对话，产出 `./my-agent/` |
+| `commando init`    | 直接拷贝一份样例 Configuration（不走对话，看效果用） |
+| `commando go-live` | 收尾向导：校验 + 连 IM + 装 launchd |
+| `commando status`  | 健康快照 |
+| `commando run --task <id>` | 手动触发一个 task |
+| `commando schedule install --apply` | 把 cron tasks 装进 launchd |
+| `commando schedule list / uninstall` | 看 / 卸 launchd job |
+| `commando connect im-feishu` | 飞书 IM 推送向导 |
+| `commando dashboard` | 本地 web 看板 |
+| `commando route --demo <level> --apply` | 发一张测试 IM 卡片 |
+
+---
+
+## 三层心智模型（请先理解这个再用）
+
+| 层 | 性质 | 由谁驱动 | 需要 Skill 吗 |
+|---|---|---|---|
+| **Charter context** | 常驻背景，每次调用自动注入 | `charter.md` | 不需要 |
+| **Structured work** | 有 cron / trigger 的循环活 | `schedule.yaml` + `skills/` | **需要 Skill** |
+| **Ad-hoc dialogue** | 用户随时 @ 它聊任何事 | IM + Charter + base LLM | 不需要 Skill |
+
+最常见的反模式：把所有能力都往第 2 层塞，导致 Configuration 误以为很重——其实大部分对话能力在第 3 层就免费拿到。
+
+---
+
+## 设计原则
+
+1. **Runtime 故意做小**。Runtime = 一个 LLM CLI 调用 + episodic 写盘。不到 200 行 Python。
+2. **不绑模型**。`claude` / `codex` / `kimi` / `glm` / `qwen` CLI 任一在 PATH 里就用。`$COMMANDO_LLM=kimi` 强制指定。
+3. **不绑调度器**。`schedule.yaml` 翻译成 launchd plist / systemd timer，由 **OS 驱动**触发——commando 不写自己的 daemon。
+4. **不绑 backend**。`commando connect <platform>` 让你本地 agent 生成 driver 代码，留在你自己仓库。
+5. **不绑 UI**。Scheduler 看板物化到你协作平台原生视图（飞书 bitable / Notion database / ClickUp）。本地 `commando dashboard` 是裸 hello-world 用的。
+6. **复用 Claude Code Skills 格式**。commando Skill = Claude Code Skill + 5 个 commando frontmatter 扩展。
+
+---
+
+## 真实例子
+
+[examples/lemingle-growth-partner/](examples/lemingle-growth-partner/) — 阿土：服务 [LeMingle](https://lemingle.com) 的真实数字员工，6+ 个月连续运行。`commando init` 默认拉的就是这个。
+
+[atu](https://github.com/Frank-Pu/atu) 是 commando 的 dogfood——atu 先于 commando 存在，commando 反过来从 atu 的设计经验中抽象。atu 不会被重写进 commando，作为参考实现独立演化。
+
+---
+
+## Specs（设计文档）
+
+- [docs/charter.md](docs/charter.md) — 数字员工的宪法
+- [docs/scheduler.md](docs/scheduler.md) — 一张表两种 row 的产品表面
+- [docs/skill.md](docs/skill.md) — Skill 格式 + commando frontmatter 扩展
+- [docs/memory.md](docs/memory.md) — Working / Episodic / Semantic 三层
+- [docs/event-bus.md](docs/event-bus.md) — Episodic 作为 event bus + IM routing
+- [docs/capabilities.md](docs/capabilities.md) — 能力词典（跨 backend 通用语义）
+- [docs/connectors.md](docs/connectors.md) — Backend + Source 连接层
+- [docs/backend-driver.md](docs/backend-driver.md) — Driver 怎么由你本地 agent 生成
+- [docs/playbook-vs-skill-boundary.md](docs/playbook-vs-skill-boundary.md) — 贡献 playbook 前必读
+- [docs/example-onboarding-transcript.md](docs/example-onboarding-transcript.md) — 真实 Onboarding 全程对话记录
+
+---
 
 ## 贡献
 
 最稀缺的贡献：
 
-1. **新 playbook**——你的角色（财务 / 客服 / 法务 / 投研 / 教育 …）没有
-   专属 playbook，把经验沉淀成 PR。
-   **写之前请先读** [docs/playbook-vs-skill-boundary.md](docs/playbook-vs-skill-boundary.md)。
-2. **Skill 提交到 Registry**——PR 改 [skills.json](skills.json) 加一条。
-3. **Backend driver 范本**——把你本地 `commando connect` 生成的 driver
-   清理一下 PR 回来作为社区参考实现。
+1. **新 playbook**——你的角色（财务 / 客服 / 法务 / 投研 / 教育 …）没有专属 playbook，把经验沉淀成 PR。写之前请先读 [docs/playbook-vs-skill-boundary.md](docs/playbook-vs-skill-boundary.md)。
+2. **Skill 提交 Registry**——PR 改 [skills.json](skills.json) 加一条。
+3. **Backend driver 范本**——把你本地 `commando connect` 生成的 driver 清理一下 PR 回来。
+4. **新 agent CLI 适配**——`commando/runtime/llm.py` 里加 codex / kimi / glm / qwen 的 verified 命令格式（目前是 stub，社区欢迎补完）。
 
-不需要的贡献：自建 GUI / 新增 Runtime 抽象 / 和某个 SaaS 深度绑定。
-这些是反 commando 设计原则的。
+**不需要的贡献**：自建 GUI / 新增 Runtime 抽象 / 和某个 SaaS 深度绑定。这些违反 commando 设计原则。
+
+---
 
 ## 当前阶段坦诚说
 
-**已有**：完整设计骨架 + 旗舰 Onboarding skill + 1 份 playbook + 真实
-example Configuration + 能力词典。
+**已发**：CLI 全套 8 个子命令、Onboarding skill、go-live 一条龙、launchd 调度、双后端 LLM、Feishu IM 推送、本地 dashboard、LeMingle 真实样例。
 
-**没有**：`commando` CLI 实现 / Runtime Python 代码 / 出厂 backend driver。
+**还在打磨**：Skill Registry（`commando install @author/skill` 现是 stub）、Linux systemd timer 模板、其他 agent CLI 的 verified 命令格式。
 
-**为什么先发文档**：commando 的核心赌注是"Configuration 是工程问题，
-不是 prompt 玄学"——这个判断本身需要先让社区讨论再决定是否值得花数月
-工程。docs-first 也是 commando 设计哲学的 dogfood。
+**短期不做**：GUI / SaaS / 多租户。
 
-如果你看完觉得这套思路 work，**最有用的反馈不是 "什么时候出 CLI"——
-是 "我想跑 Onboarding 但你的 playbook 没覆盖我的角色"** 这种具体匹配
-问题。
+---
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE) — Frank PU.
