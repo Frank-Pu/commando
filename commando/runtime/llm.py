@@ -12,6 +12,7 @@ Detection order (first found wins, override with $COMMANDO_LLM):
     qwen     — Alibaba Qwen CLI                (community)
     doubao   — ByteDance Doubao CLI            (community)
     minimax  — MiniMax CLI                     (community)
+    gemini   — Google Gemini CLI               (community)
 
 For **headless cron** use where no interactive CLI is logged in, set
 ANTHROPIC_API_KEY (env or credentials/anthropic.yaml) and we fall back to
@@ -66,6 +67,10 @@ def _minimax_cmd(system: str, user: str, model: str) -> list:
     return ["minimax", "chat", "--system", system, user, "--model", model]
 
 
+def _gemini_cmd(system: str, user: str, model: str) -> list:
+    return ["gemini", "-p", user, "--system", system, "--model", model]
+
+
 AGENT_CLIS: Dict[str, dict] = {
     "claude":  {"binary": "claude",  "make_cmd": _claude_cmd,  "verified": True},
     "codex":   {"binary": "codex",   "make_cmd": _codex_cmd,   "verified": False},
@@ -74,9 +79,10 @@ AGENT_CLIS: Dict[str, dict] = {
     "qwen":    {"binary": "qwen",    "make_cmd": _qwen_cmd,    "verified": False},
     "doubao":  {"binary": "doubao",  "make_cmd": _doubao_cmd,  "verified": False},
     "minimax": {"binary": "minimax", "make_cmd": _minimax_cmd, "verified": False},
+    "gemini":  {"binary": "gemini",  "make_cmd": _gemini_cmd,  "verified": False},
 }
 
-DETECTION_ORDER = ["claude", "codex", "kimi", "glm", "qwen", "doubao", "minimax"]
+DETECTION_ORDER = ["claude", "codex", "kimi", "glm", "qwen", "doubao", "minimax", "gemini"]
 
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -68,11 +68,13 @@ def init(dir, template, force):
 @click.option("--mode", type=click.Choice(["express", "full"]), default="express",
               help="Express ≈ 25 min, full ≈ 60-120 min.")
 @click.option("--force", is_flag=True, help="Skip the 'target exists' confirmation.")
-def onboard(target, mode, force):
-    """Start Onboarding — talk to Claude Code, produce a real Configuration."""
+@click.option("--print-prompt", is_flag=True,
+              help="Just print the kickoff prompt for paste-into-IDE use (Cursor, Windsurf, etc.).")
+def onboard(target, mode, force, print_prompt):
+    """Start Onboarding — talk to any AI tool (CLI or IDE), produce a real Configuration."""
     from commando.onboard import run as _run
 
-    _run(target, mode, force)
+    _run(target, mode, force, print_prompt=print_prompt)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

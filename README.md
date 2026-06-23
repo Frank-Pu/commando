@@ -1,6 +1,6 @@
 # commando
 
-> Configure an AI digital employee in 25 minutes. Works with whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax. commando never picks an LLM for you.
+> Configure an AI digital employee in 25 minutes. Works with whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini. commando never picks an LLM for you.
 >
 > **Runtime is commodity. Configuration is the moat.**
 
@@ -39,9 +39,28 @@ export PATH="$HOME/.commando/bin:$PATH"   # 或 append 到 ~/.zshrc / ~/.bashrc
 
 | 场景 | 用什么 |
 |---|---|
-| **Onboarding 对话** · ad-hoc 聊天 | **任意 AI 工具**：CLI（Claude Code, Codex, Kimi, GLM, Qwen, Doubao, MiniMax）或 IDE（Cursor, Windsurf, VS Code Copilot, JetBrains AI…）都行——它只是读 `skills/onboarding/SKILL.md` 跟你聊 |
+| **Onboarding 对话** · ad-hoc 聊天 | **任意 AI 工具**：CLI（Claude Code, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini）或 IDE（Cursor, Windsurf, VS Code Copilot, JetBrains AI, Claude Desktop…）都行——它只是读 `skills/onboarding/SKILL.md` 跟你聊 |
 | **定时 task（launchd / systemd 触发）** | 需要 PATH 里有 CLI（OS 调度器只能调 CLI），或 `ANTHROPIC_API_KEY` 走 SDK 兜底 |
 | **强制指定** | `export COMMANDO_LLM=kimi`（任一注册的 CLI 名） |
+
+### 我只用 IDE，没装 CLI——怎么跑？
+
+完全可以。`skills/onboarding/SKILL.md` 是纯 markdown 指令集，任何 IDE agent（Cursor / Windsurf / VS Code Copilot / JetBrains AI / Claude Desktop / ChatGPT desktop）只要有 file Read + Write 工具就能跟着跑。两条路：
+
+**路径 A · 让 commando 告诉你要粘啥**
+```bash
+cd ~/.commando
+commando onboard --print-prompt    # 直接打印一段可粘贴的 kickoff prompt
+```
+然后在你的 IDE 里粘贴它即可。`commando onboard` 不带 flag 时如果检测到没装任何 CLI，也会自动走这条路径。
+
+**路径 B · 直接在 IDE 里发起**
+
+在你 IDE 的 AI 聊天框里粘：
+
+> 请打开本仓库的 `skills/onboarding/SKILL.md` 并完整读一遍。读完之后扮演里面定义的 Onboarding 主持人角色，按 4 阶段流程（Role Scoping → Discovery → Calibration → Confirmation）带我走一遍。Confirmation 阶段请真的用 Write 工具把 Configuration 文件写到 `./my-agent/`，不要只在聊天里展示内容。
+
+完成后回到终端跑 `commando go-live`（这部分不需要 IDE，纯 CLI 就行）。
 
 验证：
 
@@ -135,7 +154,7 @@ Recent activity (episodic memory)
 ## 设计原则
 
 1. **Runtime 故意做小**。Runtime = 一个 LLM 调用 + episodic 写盘。不到 200 行 Python。
-2. **不绑模型 / 不绑工具表面**。Onboarding 在你已经在用的 AI 工具里发生——CLI 或 IDE 都行（Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax…）。定时 task 因为是 launchd 调起，需要 CLI 在 PATH 或 API key。`$COMMANDO_LLM=kimi` 可强制指定。
+2. **不绑模型 / 不绑工具表面**。Onboarding 在你已经在用的 AI 工具里发生——CLI 或 IDE 都行（Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini…）。定时 task 因为是 launchd 调起，需要 CLI 在 PATH 或 API key。`$COMMANDO_LLM=kimi` 可强制指定。
 3. **不绑调度器**。`schedule.yaml` 翻译成 launchd plist / systemd timer，由 **OS 驱动**触发——commando 不写自己的 daemon。
 4. **不绑 backend**。`commando connect <platform>` 让你本地 agent 生成 driver 代码，留在你自己仓库。
 5. **不绑 UI**。Scheduler 看板物化到你协作平台原生视图（飞书 bitable / Notion database / ClickUp）。本地 `commando dashboard` 是裸 hello-world 用的。

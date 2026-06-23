@@ -79,7 +79,8 @@ def _check_llm_backend() -> Tuple[str, str]:
     import os
     for binary, label in [("claude", "Claude Code"), ("codex", "Codex"),
                           ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen"),
-                          ("doubao", "Doubao"), ("minimax", "MiniMax")]:
+                          ("doubao", "Doubao"), ("minimax", "MiniMax"),
+                          ("gemini", "Gemini")]:
         if shutil.which(binary):
             return "cli", f"{label} CLI ({binary})"
     if os.environ.get("ANTHROPIC_API_KEY"):

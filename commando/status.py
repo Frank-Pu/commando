@@ -64,7 +64,8 @@ def run(target: str) -> None:
     found_cli = None
     for binary, name in [("claude", "Claude Code"), ("codex", "Codex"),
                           ("kimi", "Kimi"), ("glm", "GLM"), ("qwen", "Qwen"),
-                          ("doubao", "Doubao"), ("minimax", "MiniMax")]:
+                          ("doubao", "Doubao"), ("minimax", "MiniMax"),
+                          ("gemini", "Gemini")]:
         if shutil.which(binary):
             found_cli = (binary, name)
             break
