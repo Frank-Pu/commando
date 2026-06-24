@@ -1,11 +1,13 @@
 ---
 name: daily-greeting
-description: Write a one-line greeting in the agent's voice based on Charter section 1.
+description: Write a one-line greeting in the agent's voice based on Charter section
+  1.
 status: active
 model: claude-opus-4-7
 playbooks: []
 capability_requirements:
-  - Messaging.send_dm
+- Messaging.send_dm
+source: https://raw.githubusercontent.com/Frank-Pu/commando/main/my-agent/skills/daily-greeting/SKILL.md
 ---
 
 # /daily-greeting — a runnable v0.2 sample Skill
@@ -26,3 +28,4 @@ Examples (for an indie product growth agent):
 
 Examples (for a finance research agent):
   开盘前 brief 在路上了，BYD 财报今晚出，先帮你看哪几个数？
+

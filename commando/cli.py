@@ -261,29 +261,29 @@ def schedule_uninstall(target, apply):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# commando install — pull a Skill from the Registry (stub for v0.1)
+# commando install — pull a Skill from anywhere into my-agent/skills/
 # ──────────────────────────────────────────────────────────────────────────────
-@cli.command()
-@click.argument("skill_id", required=False)
-def install(skill_id):
-    """Install a Skill from the registry into ./my-agent/skills/."""
-    if not skill_id:
-        click.echo("Usage: commando install @author/skill-name")
-        click.echo("Example: commando install @frank-pu/xhs-bilingual-bridge")
-        return
-    _print_panel(
-        "Coming in v0.2 — Skill installer",
-        [
-            f"Requested: {skill_id}",
-            "",
-            "Registry: skills.json (root of this repo)",
-            "Resolution rule: @author/name → source_url field → git clone subtree",
-            "",
-            "For now, manually copy from atu:",
-            "  https://github.com/Frank-Pu/atu/tree/main/configuration/skills",
-        ],
-        color="yellow",
-    )
+@cli.command(help="Install a Skill from Registry / GitHub URL / local file / paste.")
+@click.argument("source", required=False)
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("--paste", is_flag=True, help="Paste SKILL.md content via stdin.")
+@click.option("--no-rebuild", is_flag=True, help="Skip rebuild against this agent's Charter.")
+@click.option("--no-schedule", is_flag=True, help="Skip adding a task to schedule.yaml.")
+@click.option("-y", "--yes", is_flag=True, help="Accept all prompts (non-interactive).")
+def install(source, target, paste, no_rebuild, no_schedule, yes):
+    """Install a Skill. SOURCE can be:
+
+      @author/skill-name     (Registry handle)
+      https://…/SKILL.md     (URL — auto-converts github blob URLs)
+      git+https://repo#path  (git subpath)
+      ./local/SKILL.md       (local file)
+
+    Pass no SOURCE to enter interactive mode (or use --paste).
+    """
+    from commando.install_skill import run as _run
+
+    _run(source, target, paste=paste, no_rebuild=no_rebuild,
+         no_schedule=no_schedule, yes=yes)
 
 
 def main():
