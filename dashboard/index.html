@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>commando dashboard</title>
+<link rel="icon" type="image/svg+xml" href="/ant-favicon.svg" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
 <link rel="stylesheet" href="/styles.css" />
 <script defer src="/app.js"></script>
@@ -25,8 +26,8 @@
 <header style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 18px;">
   <div class="agent-switcher" @click.outside="agentMenuOpen = false">
     <button class="agent-switcher-trigger" @click="agentMenuOpen = !agentMenuOpen" :aria-label="t('switch_agent')">
-      <div style="position:relative;width:40px;height:40px;flex-shrink:0;">
-        <img :src="data.agent.avatar_url" :alt="data.agent.name" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:block;" />
+      <div style="position:relative;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--teal-50);border-radius:50%;">
+        <img src="/ant.svg" alt="commando" style="width:32px;height:32px;display:block;" />
         <span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--teal-400);border:2px solid var(--bg-secondary);"></span>
       </div>
       <div style="min-width:0;">
@@ -59,7 +60,11 @@
     </div>
   </div>
 
-  <div style="display:flex;gap:6px;">
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button class="add-skill-btn" @click="installOpen = true" title="Install a Skill from URL / Registry / paste">
+      <i class="ti ti-plus" aria-hidden="true" style="font-size:14px;"></i>
+      <span>Add Skill</span>
+    </button>
     <button class="icon-btn" @click="toggleLang()" :title="lang === 'zh' ? 'Switch to English' : '切换为中文'">
       <span x-text="lang === 'zh' ? 'EN' : '中'" style="font-weight:500;font-size:12px;"></span>
     </button>
@@ -68,10 +73,6 @@
     </button>
     <button class="icon-btn" @click="load()" :aria-label="t('refresh')">
       <i class="ti ti-refresh" aria-hidden="true" style="font-size:15px;"></i>
-    </button>
-    <button class="icon-btn skills-btn" @click="showSkills = true" :aria-label="t('skills')">
-      <i class="ti ti-bolt" aria-hidden="true" style="font-size:15px;"></i>
-      <span class="skills-btn-count mono" x-text="(data.skills || []).length"></span>
     </button>
     <button class="icon-btn" :aria-label="t('settings')">
       <i class="ti ti-settings" aria-hidden="true" style="font-size:15px;"></i>
@@ -107,13 +108,21 @@
     <i class="ti ti-layout-kanban" aria-hidden="true" style="font-size:14px;"></i>
     <span x-text="t('kanban')"></span>
   </button>
-  <button class="tab" :class="{'tab-active': activeTab === 'calendar'}" @click="activeTab='calendar'">
-    <i class="ti ti-calendar" aria-hidden="true" style="font-size:14px;"></i>
-    <span x-text="t('calendar')"></span>
+  <button class="tab" :class="{'tab-active': activeTab === 'skills'}" @click="activeTab='skills'; loadSkillStats()">
+    <i class="ti ti-bolt" aria-hidden="true" style="font-size:14px;"></i>
+    <span>Skills</span>
   </button>
-  <button class="tab" :class="{'tab-active': activeTab === 'knowledge'}" @click="activeTab='knowledge'">
-    <i class="ti ti-books" aria-hidden="true" style="font-size:14px;"></i>
-    <span x-text="t('knowledge')"></span>
+  <button class="tab" :class="{'tab-active': activeTab === 'charter'}" @click="activeTab='charter'; loadCharter()">
+    <i class="ti ti-file-text" aria-hidden="true" style="font-size:14px;"></i>
+    <span>Charter</span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'schedule'}" @click="activeTab='schedule'">
+    <i class="ti ti-calendar" aria-hidden="true" style="font-size:14px;"></i>
+    <span>Schedule</span>
+  </button>
+  <button class="tab" :class="{'tab-active': activeTab === 'memory'}" @click="activeTab='memory'; loadMemory()">
+    <i class="ti ti-database" aria-hidden="true" style="font-size:14px;"></i>
+    <span>Memory</span>
   </button>
   <button class="tab" :class="{'tab-active': activeTab === 'activity'}" @click="activeTab='activity'">
     <i class="ti ti-broadcast" aria-hidden="true" style="font-size:14px;"></i>
@@ -427,6 +436,191 @@
     📚 这是 <span x-text="data.agent.name"></span> 在飞书 / Notion / 本地 semantic memory 里的产物——点开看真实内容。切换 agent 顶部头像。
   </p>
 </section>
+
+<!-- ─────────── v2: Skills impact panel ─────────── -->
+<section x-show="activeTab === 'skills'">
+  <p class="sec-label">
+    <span>Skill 影响力 · 最近 30 天</span>
+    <span class="meta" x-text="skillStats.length + ' skills'"></span>
+  </p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+    哪些 skill 真在产出价值？哪些一次没跑过？点 toggle 直接禁用关联的 schedule task。
+  </p>
+  <div x-show="skillStatsLoading" class="empty-state">loading skill stats…</div>
+  <div x-show="!skillStatsLoading">
+    <template x-for="s in sortedSkillStats()" :key="s.name">
+      <div class="card" style="margin-bottom:8px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+              <span style="font-weight:600;font-size:14px;" x-text="s.name"></span>
+              <span class="status-pill" :class="s.status === 'active' ? 'pill-ok' : 'pill-draft'" x-text="s.status"></span>
+              <template x-if="s.source">
+                <span class="meta" style="font-size:10px;">imported</span>
+              </template>
+            </div>
+            <p style="font-size:12px;color:var(--text-secondary);margin:0 0 6px;line-height:1.5;" x-text="s.description"></p>
+            <div style="display:flex;gap:14px;font-size:11px;color:var(--text-tertiary);font-family:var(--font-mono);">
+              <span>fires: <b style="color:var(--teal-600);" x-text="s.fires_30d"></b></span>
+              <span>done: <b style="color:var(--teal-500);" x-text="s.done_30d"></b></span>
+              <span x-show="s.fail_30d > 0">fail: <b style="color:var(--coral-600);" x-text="s.fail_30d"></b></span>
+              <span x-show="s.last_fire">last: <span x-text="shortTs(s.last_fire)"></span></span>
+              <span x-show="!s.last_fire" style="font-style:italic;">never fired</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            <template x-for="tag in (s.tags || []).slice(0,3)" :key="tag">
+              <span class="tag" x-text="tag"></span>
+            </template>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</section>
+
+<!-- ─────────── v2: Charter live edit ─────────── -->
+<section x-show="activeTab === 'charter'">
+  <p class="sec-label">
+    <span>Charter · 数字员工的宪法</span>
+    <span class="meta" x-text="charter.bytes ? Math.round(charter.bytes/1024*10)/10 + ' KB' : ''"></span>
+  </p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+    改 charter = 改这个 agent 的 voice / ICP / 红线。下次 skill 触发时自动生效。
+  </p>
+  <div x-show="charterLoading" class="empty-state">loading charter…</div>
+  <div x-show="!charterLoading && !charter.ok" class="empty-state" style="color:var(--coral-600);" x-text="charter.error || 'charter.md not found'"></div>
+  <div x-show="!charterLoading && charter.ok">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" @click="saveCharter()" :disabled="!charterDirty">
+          <i class="ti ti-device-floppy" style="font-size:13px;"></i>
+          <span x-text="charterDirty ? 'Save' : 'Saved'"></span>
+        </button>
+        <button class="btn-secondary" @click="loadCharter()" title="Discard unsaved changes">
+          <i class="ti ti-refresh" style="font-size:13px;"></i>
+          Reload
+        </button>
+      </div>
+      <p class="mono meta" x-text="charter.path"></p>
+    </div>
+    <textarea
+      x-model="charter.text"
+      @input="charterDirty = true"
+      class="charter-editor"
+      spellcheck="false"
+    ></textarea>
+    <p x-show="charterSaveMsg" class="meta" style="margin-top:8px;" x-text="charterSaveMsg"></p>
+  </div>
+</section>
+
+<!-- ─────────── v2: Schedule with toggle ─────────── -->
+<section x-show="activeTab === 'schedule'">
+  <p class="sec-label">
+    <span>Schedule · cron 任务总览</span>
+    <span class="meta" x-text="(data.tasks || []).length + ' tasks'"></span>
+  </p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+    Toggle 直接改 schedule.yaml 的 enabled 字段。改完别忘了 <span class="mono">commando schedule install --apply</span> 把变化推到 launchd。
+  </p>
+  <template x-for="task in (data.tasks || [])" :key="task.id">
+    <div class="card schedule-row" style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+            <span style="font-weight:600;font-size:14px;" x-text="task.id"></span>
+            <span class="status-pill" :class="task.enabled === false ? 'pill-off' : 'pill-ok'" x-text="task.enabled === false ? 'disabled' : (task.trigger_type || 'cron')"></span>
+            <span class="mono meta" x-text="task.cron || (task.trigger && task.trigger.cron) || 'manual'"></span>
+          </div>
+          <p style="font-size:12px;color:var(--text-secondary);margin:0;line-height:1.4;" x-text="task.name || task.summary || ''"></p>
+          <p style="font-size:11px;color:var(--text-tertiary);margin:4px 0 0;font-family:var(--font-mono);">
+            skills: <span x-text="(task.skills || []).join(', ') || '(none)'"></span>
+          </p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" :checked="task.enabled !== false" @change="toggleTask(task.id, $event.target.checked)" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </template>
+</section>
+
+<!-- ─────────── v2: Memory tab (semantic + connectors) ─────────── -->
+<section x-show="activeTab === 'memory'">
+  <p class="sec-label"><span>Connectors · 数据连接健康度</span></p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+    哪些 backend 配好了、哪些还缺。skill 跑时如果需要的 connector 没配，会自动 fallback 到本地文件。
+  </p>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:24px;">
+    <template x-for="c in (connectors || [])" :key="c.slug">
+      <div class="card" style="padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <p style="font-weight:600;font-size:13px;margin:0;" x-text="c.label"></p>
+            <p class="mono meta" style="font-size:10px;" x-text="c.path"></p>
+          </div>
+          <span class="status-pill" :class="c.status === 'ok' ? 'pill-ok' : (c.status === 'partial' ? 'pill-warn' : 'pill-off')" x-text="c.status"></span>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <p class="sec-label"><span>Semantic Memory · 数字员工的长期沉淀</span></p>
+  <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+    weekly_reflection 类的 skill 把 ICP 洞察 / user-quote-vault / 失败教训写到这里，下次 skill 触发自动注入。
+  </p>
+  <div x-show="(semantic || []).length === 0" class="empty-state">
+    No semantic memory yet — weekly_reflection 还没跑过、或这个 agent 不沉淀长期记忆。
+  </div>
+  <template x-for="m in (semantic || [])" :key="m.file">
+    <div class="card" style="margin-bottom:8px;">
+      <p style="font-weight:600;font-size:14px;margin:0 0 6px;" x-text="m.title"></p>
+      <pre class="memory-preview" x-text="m.preview"></pre>
+      <p class="mono meta" x-text="m.file + ' · ' + Math.round(m.bytes/1024*10)/10 + ' KB'"></p>
+    </div>
+  </template>
+</section>
+
+<!-- ─────────── v2: Install Skill modal ─────────── -->
+<template x-if="installOpen">
+  <div>
+    <div class="modal-backdrop" @click="installOpen = false"></div>
+    <div class="modal" @click="installOpen = false">
+      <div class="modal-card" @click.stop>
+        <div class="modal-head">
+          <p class="modal-title">
+            <i class="ti ti-plus" style="font-size:13px;"></i>
+            <span>Add a Skill</span>
+          </p>
+          <button class="icon-btn" @click="installOpen = false">
+            <i class="ti ti-x" style="font-size:14px;"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 14px;">
+            贴一个 SKILL.md 的 URL（GitHub blob 链接自动转 raw），或 Registry 句柄 <span class="mono">@author/name</span>。
+          </p>
+          <input
+            type="text"
+            x-model="installSource"
+            class="install-input"
+            placeholder="https://github.com/.../SKILL.md  或  @author/skill-name"
+            @keydown.enter="runInstall()"
+          />
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <button class="btn-secondary" @click="installOpen = false">Cancel</button>
+            <button class="btn-primary" @click="runInstall()" :disabled="!installSource || installRunning">
+              <i class="ti" :class="installRunning ? 'ti-loader' : 'ti-download'" style="font-size:13px;"></i>
+              <span x-text="installRunning ? 'Installing…' : 'Install'"></span>
+            </button>
+          </div>
+          <pre x-show="installLog" class="install-log" x-text="installLog"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <div class="footer">
   <p class="mono" style="margin:0;">./my-agent/</p>

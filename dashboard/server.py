@@ -322,6 +322,20 @@ def build_data(agent_dir: Path) -> dict:
     week = compute_week(schedule, today)
     month = compute_month(schedule, today)
 
+    # v2: flat task list for Schedule tab (raw schedule.yaml shape + flags)
+    all_tasks = []
+    for t in schedule:
+        trig = t.get("trigger") or {}
+        all_tasks.append({
+            "id": t.get("id"),
+            "name": t.get("name", ""),
+            "enabled": t.get("enabled", True),
+            "cron": trig.get("cron"),
+            "trigger_type": trig.get("type", "cron"),
+            "skills": t.get("skills") or [],
+            "tags": t.get("tags") or [],
+        })
+
     return _attach_skills({
         "agent": agent,
         "metrics": metrics,
@@ -336,6 +350,7 @@ def build_data(agent_dir: Path) -> dict:
         "kanban": kanban,
         "week": week,
         "month": month,
+        "tasks": all_tasks,
         "knowledge": _knowledge_growth_partner(),
         "activity": _mock_activity_atu(today),
     }, skills)
@@ -712,8 +727,28 @@ def _full_mock(agent: dict) -> dict:
     resolved = agent if agent.get("name") != "agent" else default_agent
     if "avatar_url" not in resolved:
         resolved["avatar_url"] = AVATAR_URLS.get("atu")
+    # v2: include flat tasks for Schedule tab even in mock fallback
+    mock_tasks = []
+    try:
+        # Try to read real schedule.yaml if it exists (gives toggle ability)
+        real_dir = HERE.parent / "my-agent"
+        if (real_dir / "schedule.yaml").exists():
+            for t in load_schedule(real_dir):
+                trig = t.get("trigger") or {}
+                mock_tasks.append({
+                    "id": t.get("id"),
+                    "name": t.get("name", ""),
+                    "enabled": t.get("enabled", True),
+                    "cron": trig.get("cron"),
+                    "trigger_type": trig.get("type", "cron"),
+                    "skills": t.get("skills") or [],
+                    "tags": t.get("tags") or [],
+                })
+    except Exception:
+        pass
     return {
         "agent": resolved,
+        "tasks": mock_tasks,
         "metrics": {"awaiting": 1, "running": 2, "done_today": 4, "this_week": 9},
         "today": {
             "date": today.isoformat(),
@@ -938,6 +973,203 @@ def open_local_path(uri: str) -> bool:
         return False
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# v2 dashboard helpers — Skills impact / Charter edit / Schedule toggle /
+#                       Install / Connectors / Semantic memory
+# ──────────────────────────────────────────────────────────────────────────────
+
+def read_charter(agent_dir: Path) -> dict:
+    p = agent_dir / "charter.md"
+    if not p.exists():
+        return {"ok": False, "error": f"charter.md not found at {p}"}
+    return {"ok": True, "path": str(p), "text": p.read_text(encoding="utf-8"),
+            "bytes": p.stat().st_size}
+
+
+def write_charter(agent_dir: Path, text: str) -> dict:
+    p = agent_dir / "charter.md"
+    if not p.parent.exists():
+        return {"ok": False, "error": f"{p.parent} does not exist"}
+    # atomic-ish: write to temp, rename
+    tmp = p.with_suffix(".md.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(p)
+    return {"ok": True, "bytes": p.stat().st_size}
+
+
+def compute_skill_stats(agent_dir: Path) -> list:
+    """For each skill, compute fires in last 30 days from episodic events."""
+    skills_dir = agent_dir / "skills"
+    epdir = agent_dir / "memory" / "episodic"
+
+    skill_files = sorted(skills_dir.glob("*/SKILL.md")) if skills_dir.exists() else []
+    by_name = {}
+    for sp in skill_files:
+        fm = parse_frontmatter(sp)
+        name = fm.get("name") or sp.parent.name
+        by_name[name] = {
+            "name": name,
+            "status": fm.get("status", "draft"),
+            "description": fm.get("description", "") or "",
+            "tags": fm.get("tags") or [],
+            "source": fm.get("source") or "",
+            "fires_30d": 0,
+            "done_30d": 0,
+            "fail_30d": 0,
+            "last_fire": None,
+            "path": str(sp),
+        }
+
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    if epdir.exists():
+        for log in sorted(epdir.glob("*.jsonl")):
+            try:
+                for line in log.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    try:
+                        ev = json.loads(line)
+                    except Exception:
+                        continue
+                    skill = ev.get("skill")
+                    if not skill or skill not in by_name:
+                        continue
+                    ts = ev.get("ts", "")
+                    try:
+                        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
+                    except Exception:
+                        continue
+                    if dt < cutoff:
+                        continue
+                    level = ev.get("level") or ""
+                    if level == "trigger":
+                        by_name[skill]["fires_30d"] += 1
+                        cur = by_name[skill]["last_fire"]
+                        if not cur or ts > cur:
+                            by_name[skill]["last_fire"] = ts
+                    elif level == "done":
+                        by_name[skill]["done_30d"] += 1
+                    elif level in ("fail", "error"):
+                        by_name[skill]["fail_30d"] += 1
+            except Exception:
+                continue
+
+    return list(by_name.values())
+
+
+def toggle_task_in_schedule(agent_dir: Path, task_id: str, enabled: bool) -> dict:
+    """Find `- id: X` block in schedule.yaml, toggle `enabled: true/false`.
+    Preserves comments and structure by doing text-level edit."""
+    p = agent_dir / "schedule.yaml"
+    if not p.exists():
+        return {"ok": False, "error": f"schedule.yaml not found at {p}"}
+    text = p.read_text(encoding="utf-8")
+    lines = text.split("\n")
+
+    in_task = False
+    found = False
+    desired_str = "true" if enabled else "false"
+    out = []
+    for i, line in enumerate(lines):
+        s = line.strip()
+        # detect task header
+        if s.startswith("- id:") and s.split(":", 1)[1].strip() == task_id:
+            in_task = True
+            found = True
+            out.append(line)
+            continue
+        # next task starts → exit
+        if in_task and s.startswith("- id:") and s.split(":", 1)[1].strip() != task_id:
+            in_task = False
+        if in_task and s.startswith("enabled:"):
+            # preserve indent
+            indent = line[:len(line) - len(line.lstrip())]
+            out.append(f"{indent}enabled: {desired_str}")
+            in_task = False  # done with this task
+            continue
+        out.append(line)
+
+    if not found:
+        return {"ok": False, "error": f"task '{task_id}' not found in schedule.yaml"}
+
+    tmp = p.with_suffix(".yaml.tmp")
+    tmp.write_text("\n".join(out), encoding="utf-8")
+    tmp.replace(p)
+    return {"ok": True, "task": task_id, "enabled": enabled}
+
+
+def install_skill(source: str, agent_dir: Path) -> dict:
+    """Wrap `commando install <source>` as a subprocess and return output."""
+    if not source or len(source) > 1000:
+        return {"ok": False, "error": "invalid source"}
+    # Locate the commando module — same repo as this dashboard
+    repo_root = HERE.parent
+    cmd = [sys.executable, "-m", "commando.cli", "install",
+           source, "--agent-dir", str(agent_dir), "-y",
+           "--no-rebuild", "--no-schedule"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=60,
+                           cwd=str(repo_root))
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "install timed out (60s)"}
+    return {
+        "ok": r.returncode == 0,
+        "stdout": r.stdout[-4000:],
+        "stderr": r.stderr[-2000:],
+        "returncode": r.returncode,
+    }
+
+
+def read_connectors_status(agent_dir: Path) -> dict:
+    """Return connector health: which credentials files exist, which are configured."""
+    out = {"connectors": []}
+    cred_dir = agent_dir / "credentials"
+    known = [
+        ("feishu", "Feishu IM", "notify_chat_id"),
+        ("anthropic", "Anthropic API", "api_key"),
+        ("notion", "Notion", "api_key"),
+        ("stripe", "Stripe", "api_key"),
+    ]
+    for slug, label, key in known:
+        cred_file = cred_dir / f"{slug}.yaml"
+        if cred_file.exists():
+            data = parse_yaml(cred_file)
+            # Look anywhere in the parsed YAML for the key
+            present = key in (data or {}) or any(
+                isinstance(v, dict) and key in v for v in (data or {}).values()
+            )
+            out["connectors"].append({
+                "slug": slug, "label": label, "status": "ok" if present else "partial",
+                "configured": present, "path": str(cred_file),
+            })
+        else:
+            out["connectors"].append({
+                "slug": slug, "label": label, "status": "missing",
+                "configured": False, "path": str(cred_file),
+            })
+    return out
+
+
+def read_semantic_memory(agent_dir: Path) -> list:
+    """List files in memory/semantic/ with a preview."""
+    sem_dir = agent_dir / "memory" / "semantic"
+    out = []
+    if not sem_dir.exists():
+        return out
+    for p in sorted(sem_dir.glob("*.md")):
+        try:
+            text = p.read_text(encoding="utf-8")
+            title = next((ln.strip("# ").strip() for ln in text.splitlines() if ln.startswith("#")), p.stem)
+            preview = "\n".join(text.splitlines()[:8])
+            out.append({"file": p.name, "title": title, "preview": preview,
+                        "bytes": p.stat().st_size, "path": str(p)})
+        except Exception:
+            continue
+    return out
+
+
 def make_handler(agent_dir: Path, agents_root: Optional[Path]):
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -956,7 +1188,46 @@ def make_handler(agent_dir: Path, agents_root: Optional[Path]):
                 uri = (qs.get("uri") or [""])[0]
                 ok = open_local_path(uri)
                 return self._json({"ok": ok})
+            # v2 read endpoints
+            if parsed.path == "/api/charter":
+                return self._json(read_charter(agent_dir))
+            if parsed.path == "/api/skill-stats":
+                return self._json({"skills": compute_skill_stats(agent_dir)})
+            if parsed.path == "/api/connectors":
+                return self._json(read_connectors_status(agent_dir))
+            if parsed.path == "/api/semantic":
+                return self._json({"items": read_semantic_memory(agent_dir)})
             return self._static(parsed.path)
+
+        def do_POST(self):
+            parsed = urllib.parse.urlparse(self.path)
+            length = int(self.headers.get("Content-Length") or 0)
+            try:
+                raw = self.rfile.read(length) if length else b""
+                body = json.loads(raw.decode("utf-8")) if raw else {}
+            except Exception as e:
+                return self._error(400, f"bad JSON: {e}")
+
+            if parsed.path == "/api/charter":
+                text = body.get("text", "")
+                if not isinstance(text, str) or len(text) > 200_000:
+                    return self._error(400, "invalid text")
+                return self._json(write_charter(agent_dir, text))
+
+            if parsed.path == "/api/task-toggle":
+                task_id = body.get("task")
+                enabled = bool(body.get("enabled"))
+                if not task_id:
+                    return self._error(400, "task id required")
+                return self._json(toggle_task_in_schedule(agent_dir, task_id, enabled))
+
+            if parsed.path == "/api/install":
+                source = body.get("source", "")
+                if not source:
+                    return self._error(400, "source required")
+                return self._json(install_skill(source, agent_dir))
+
+            return self._error(404, "not found")
 
         def _static(self, path: str):
             if path == "/" or path == "":

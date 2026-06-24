@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- simplified for favicon: drop legs/antennae, keep 3-circle silhouette + coral block -->
+  <circle cx="36" cy="48" r="18" fill="#2a8585"/>
+  <circle cx="62" cy="58" r="14" fill="#1f6b6b"/>
+  <circle cx="92" cy="68" r="22" fill="#2a8585"/>
+  <circle cx="29" cy="44" r="4" fill="#fff"/>
+  <circle cx="29" cy="44" r="2" fill="#0d3e3e"/>
+  <g transform="translate(52 33) rotate(-12)">
+    <rect width="24" height="22" rx="4" fill="#ff6b6b"/>
+    <line x1="4" y1="7"  x2="20" y2="7"  stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="4" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+    <line x1="4" y1="17" x2="18" y2="17" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+</svg>

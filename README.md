@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="dashboard/ant.svg" alt="commando" width="120" />
+</p>
+
 # commando
 
 > Configure an AI digital employee in 25 minutes. Works with whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini. commando never picks an LLM for you.

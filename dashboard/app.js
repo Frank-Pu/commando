@@ -178,6 +178,20 @@ function dashboard() {
     _clockTimer: null,
     _liveSeedIdx: 0,
 
+    // v2 dashboard state
+    skillStats: [],
+    skillStatsLoading: false,
+    charter: { ok: false, text: '', bytes: 0, path: '' },
+    charterLoading: false,
+    charterDirty: false,
+    charterSaveMsg: '',
+    connectors: [],
+    semantic: [],
+    installOpen: false,
+    installSource: '',
+    installRunning: false,
+    installLog: '',
+
     async init() {
       applyTheme(this.theme);
       await this.loadAgents();
@@ -222,6 +236,134 @@ function dashboard() {
     },
 
     toggleLive() { this.livePaused = !this.livePaused; },
+
+    // ── v2: Skill impact panel ───────────────────────────────────────────
+    async loadSkillStats() {
+      this.skillStatsLoading = true;
+      try {
+        const r = await fetch('/api/skill-stats');
+        const j = await r.json();
+        this.skillStats = j.skills || [];
+      } catch (e) {
+        console.error('skill-stats failed:', e);
+        this.skillStats = [];
+      } finally {
+        this.skillStatsLoading = false;
+      }
+    },
+    sortedSkillStats() {
+      return [...this.skillStats].sort((a, b) => (b.fires_30d - a.fires_30d) || a.name.localeCompare(b.name));
+    },
+    shortTs(ts) {
+      if (!ts) return '';
+      try {
+        const d = new Date(ts);
+        const now = new Date();
+        const diffMin = Math.floor((now - d) / 60000);
+        if (diffMin < 60) return diffMin + 'm ago';
+        if (diffMin < 1440) return Math.floor(diffMin / 60) + 'h ago';
+        return Math.floor(diffMin / 1440) + 'd ago';
+      } catch { return ts; }
+    },
+
+    // ── v2: Charter live edit ────────────────────────────────────────────
+    async loadCharter() {
+      this.charterLoading = true;
+      this.charterSaveMsg = '';
+      try {
+        const r = await fetch('/api/charter');
+        this.charter = await r.json();
+        this.charterDirty = false;
+      } catch (e) {
+        this.charter = { ok: false, error: 'failed to fetch: ' + e.message };
+      } finally {
+        this.charterLoading = false;
+      }
+    },
+    async saveCharter() {
+      if (!this.charterDirty) return;
+      try {
+        const r = await fetch('/api/charter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: this.charter.text }),
+        });
+        const j = await r.json();
+        if (j.ok) {
+          this.charterDirty = false;
+          this.charter.bytes = j.bytes;
+          this.charterSaveMsg = '✓ saved ' + new Date().toLocaleTimeString();
+          setTimeout(() => { this.charterSaveMsg = ''; }, 3000);
+        } else {
+          this.charterSaveMsg = '✗ ' + (j.error || 'save failed');
+        }
+      } catch (e) {
+        this.charterSaveMsg = '✗ ' + e.message;
+      }
+    },
+
+    // ── v2: Memory tab ───────────────────────────────────────────────────
+    async loadMemory() {
+      try {
+        const [rc, rs] = await Promise.all([
+          fetch('/api/connectors').then(r => r.json()),
+          fetch('/api/semantic').then(r => r.json()),
+        ]);
+        this.connectors = rc.connectors || [];
+        this.semantic = rs.items || [];
+      } catch (e) {
+        console.error('memory load failed:', e);
+      }
+    },
+
+    // ── v2: Schedule toggle ──────────────────────────────────────────────
+    async toggleTask(taskId, enabled) {
+      try {
+        const r = await fetch('/api/task-toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task: taskId, enabled }),
+        });
+        const j = await r.json();
+        if (!j.ok) {
+          alert('toggle failed: ' + (j.error || 'unknown'));
+        }
+        // Refresh data so the UI reflects schedule.yaml
+        await this.load();
+      } catch (e) {
+        alert('toggle failed: ' + e.message);
+      }
+    },
+
+    // ── v2: Install Skill ────────────────────────────────────────────────
+    async runInstall() {
+      if (!this.installSource || this.installRunning) return;
+      this.installRunning = true;
+      this.installLog = 'Installing ' + this.installSource + '…';
+      try {
+        const r = await fetch('/api/install', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ source: this.installSource }),
+        });
+        const j = await r.json();
+        this.installLog = (j.stdout || '') + (j.stderr ? '\n— stderr —\n' + j.stderr : '');
+        if (j.ok) {
+          // Refresh skill list + dashboard data so the new skill shows up
+          await this.load();
+          if (this.activeTab === 'skills') await this.loadSkillStats();
+          setTimeout(() => {
+            this.installOpen = false;
+            this.installSource = '';
+            this.installLog = '';
+          }, 2500);
+        }
+      } catch (e) {
+        this.installLog = 'failed: ' + e.message;
+      } finally {
+        this.installRunning = false;
+      }
+    },
 
     allEvents() {
       const historical = (this.data && this.data.activity && this.data.activity.events) || [];
