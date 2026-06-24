@@ -47,10 +47,18 @@ def _validate(agent_dir: Path) -> Tuple[List[Tuple[str, bool, str]], dict]:
               if "status: active" in p.read_text(encoding="utf-8", errors="ignore")]
     info["skill_files"] = skill_files
     info["active_skills"] = active
+    draft_count = len(skill_files) - len(active)
+    if skill_files and len(active) == 0:
+        hint = ("All skills are draft placeholders (have metadata, no prompt body). "
+                "Step 4 below will build them, or run `commando build-skills --apply`.")
+    elif draft_count > 0:
+        hint = f"{draft_count} skill(s) still draft — Step 4 can fill them in."
+    else:
+        hint = ""
     checks.append((
-        f"skills ({len(skill_files)} found, {len(active)} active)",
+        f"skills ({len(skill_files)} found, {len(active)} active, {draft_count} draft)",
         len(skill_files) > 0,
-        "" if skill_files else "no skills/*/SKILL.md found — Onboarding didn't produce skill stubs",
+        hint if skill_files else "no skills/*/SKILL.md found — Onboarding didn't produce skill stubs",
     ))
 
     schedule_yml = agent_dir / "schedule.yaml"
@@ -92,7 +100,8 @@ def _check_llm_backend() -> Tuple[str, str]:
 # Main wizard
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run(target: str, yes: bool = False, skip_im: bool = False, skip_schedule: bool = False) -> None:
+def run(target: str, yes: bool = False, skip_im: bool = False,
+        skip_schedule: bool = False, skip_build_skills: bool = False) -> None:
     agent_dir = Path(target).resolve()
 
     click.echo()
@@ -153,9 +162,39 @@ def run(target: str, yes: bool = False, skip_im: bool = False, skip_schedule: bo
         else:
             click.secho("    skipped (run later: commando connect im-feishu)", fg="bright_black")
 
-    # ── Step 4 · Install schedule into launchd ───────────────────────────────
+    # ── Step 4 · Skill materialization ───────────────────────────────────────
     click.echo()
-    click.secho("  Step 4 · OS scheduler (launchd)", bold=True)
+    click.secho("  Step 4 · Skill materialization", bold=True)
+    click.echo()
+
+    skill_files = info["skill_files"]
+    active_skills = info["active_skills"]
+    draft_count = len(skill_files) - len(active_skills)
+
+    if not skill_files:
+        click.echo("    No skills found.")
+    elif draft_count == 0:
+        click.secho(f"    ✓  all {len(active_skills)} skill(s) already active", fg="green")
+    elif skip_build_skills:
+        click.secho(f"    ⊘  skipped per --skip-build-skills ({draft_count} draft will stay draft)", fg="bright_black")
+    else:
+        click.echo(f"    {draft_count} skill(s) are draft placeholders — they have metadata")
+        click.echo("    but no prompt body, so they cannot run at runtime yet.")
+        click.echo()
+        click.echo("    Building calls your AI tool once per skill, using Charter +")
+        click.echo("    playbook + skill metadata as context (~30 sec/skill).")
+        click.echo()
+        if yes or click.confirm("    Build Skill prompt bodies now?", default=True):
+            click.echo()
+            from commando.build_skills import run as _run_build
+            _run_build(str(agent_dir), apply=True)
+        else:
+            click.secho("    skipped (run later: commando build-skills --apply)", fg="bright_black")
+            click.secho(f"    ! tasks will fail at runtime until {draft_count} skill(s) are built.", fg="yellow")
+
+    # ── Step 5 · Install schedule into launchd ───────────────────────────────
+    click.echo()
+    click.secho("  Step 5 · OS scheduler (launchd)", bold=True)
     click.echo()
 
     cron_tasks = info["cron_tasks"]
@@ -179,14 +218,16 @@ def run(target: str, yes: bool = False, skip_im: bool = False, skip_schedule: bo
         else:
             click.secho("    skipped (run later: commando schedule install --apply)", fg="bright_black")
 
-    # ── Step 5 · You're live ─────────────────────────────────────────────────
+    # ── Step 6 · You're live ─────────────────────────────────────────────────
     click.echo()
     click.secho("  ─── You're live ───", fg="green", bold=True)
     click.echo()
+    # Re-validate to pick up newly-built skills
+    checks2, info2 = _validate(agent_dir)
     click.echo("    What's running now:")
-    click.echo(f"      · {len(info['active_skills'])} active Skill(s)")
+    click.echo(f"      · {len(info2['active_skills'])} active Skill(s)")
     click.echo(f"      · {len(cron_tasks)} cron task(s) on launchd")
-    click.echo(f"      · {len(info['manual_tasks'])} manual task(s) (trigger with `commando run --task X`)")
+    click.echo(f"      · {len(info2['manual_tasks'])} manual task(s) (trigger with `commando run --task X`)")
     if has_im:
         click.echo(f"      · Feishu IM push enabled")
     click.echo()

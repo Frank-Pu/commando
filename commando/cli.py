@@ -38,7 +38,16 @@ from commando import __version__
 
 @click.group(
     context_settings={"help_option_names": ["-h", "--help"]},
-    help="commando — Runtime is commodity. Configuration is the moat.",
+    help=(
+        "commando — Runtime is commodity. Configuration is the moat.\n"
+        "\n"
+        "  First time here? Run these three in order:\n"
+        "    1)  commando onboard         # 25 min — produces ./my-agent/\n"
+        "    2)  commando build-skills --apply   # fill in Skill prompt bodies\n"
+        "    3)  commando go-live         # validate + connect IM + install schedule\n"
+        "\n"
+        "  Then:  commando status / commando dashboard / commando run --task <id>"
+    ),
 )
 @click.version_option(version=__version__, prog_name="commando")
 def cli():
@@ -175,17 +184,35 @@ def run(task_id, target, apply, inputs):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# commando build-skills — turn draft skills into runnable ones
+# ──────────────────────────────────────────────────────────────────────────────
+@cli.command("build-skills",
+             help="Fill in Skill prompt bodies for draft Skills produced by Onboarding.")
+@click.option("--agent-dir", "target", default="./my-agent")
+@click.option("--skill", "skill_id", default=None,
+              help="Build only one skill by id (e.g. xhs-bilingual-bridge).")
+@click.option("--apply", is_flag=True, help="Actually call LLM + rewrite SKILL.md (default: dry-run).")
+@click.option("--force", is_flag=True, help="Rebuild even Skills already marked status: active.")
+def build_skills(target, skill_id, apply, force):
+    from commando.build_skills import run as _run
+
+    _run(target, skill_id=skill_id, apply=apply, force=force)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # commando go-live — post-onboarding closeout (validate + IM + schedule)
 # ──────────────────────────────────────────────────────────────────────────────
-@cli.command("go-live", help="Post-onboarding closeout: validate, set up IM, install launchd.")
+@cli.command("go-live", help="Post-onboarding closeout: validate, build skills, set up IM, install launchd.")
 @click.option("--agent-dir", "target", default="./my-agent")
 @click.option("-y", "--yes", is_flag=True, help="Accept all prompts (non-interactive).")
 @click.option("--skip-im", is_flag=True, help="Skip Feishu IM setup.")
 @click.option("--skip-schedule", is_flag=True, help="Skip launchd install.")
-def go_live(target, yes, skip_im, skip_schedule):
+@click.option("--skip-build-skills", is_flag=True, help="Skip Skill prompt body generation.")
+def go_live(target, yes, skip_im, skip_schedule, skip_build_skills):
     from commando.go_live import run as _run
 
-    _run(target, yes=yes, skip_im=skip_im, skip_schedule=skip_schedule)
+    _run(target, yes=yes, skip_im=skip_im, skip_schedule=skip_schedule,
+         skip_build_skills=skip_build_skills)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
