@@ -1,4 +1,6 @@
-"""commando go-live — the post-onboarding closeout wizard.
+"""commando go-live — the post-onboarding closeout wizard."""
+import os
+"""
 
 Stranger journey:
     init/onboard → produces my-agent/
@@ -178,19 +180,41 @@ def run(target: str, yes: bool = False, skip_im: bool = False,
     elif skip_build_skills:
         click.secho(f"    ⊘  skipped per --skip-build-skills ({draft_count} draft will stay draft)", fg="bright_black")
     else:
+        # Detect whether headless LLM is available (CLI in PATH that won't
+        # subprocess-auth-fail, OR an API key set). If neither, default to
+        # --print-prompts mode so the user's IDE agent does the work.
+        has_api_key = bool(os.environ.get("ANTHROPIC_API_KEY")) or \
+                      (agent_dir / "credentials" / "anthropic.yaml").exists()
+        headless_likely = has_api_key  # CLI subprocess is too flaky to trust
+
         click.echo(f"    {draft_count} skill(s) are draft placeholders — they have metadata")
         click.echo("    but no prompt body, so they cannot run at runtime yet.")
         click.echo()
-        click.echo("    Building calls your AI tool once per skill, using Charter +")
-        click.echo("    playbook + skill metadata as context (~30 sec/skill).")
-        click.echo()
-        if yes or click.confirm("    Build Skill prompt bodies now?", default=True):
+        if headless_likely:
+            click.echo("    Headless mode: ANTHROPIC_API_KEY found → will call LLM directly")
+            click.echo("    once per skill (~30 sec/skill).")
             click.echo()
-            from commando.build_skills import run as _run_build
-            _run_build(str(agent_dir), apply=True)
+            if yes or click.confirm("    Build Skill prompt bodies now?", default=True):
+                click.echo()
+                from commando.build_skills import run as _run_build
+                _run_build(str(agent_dir), apply=True)
+            else:
+                click.secho("    skipped (run later: commando build-skills --apply)", fg="bright_black")
+                click.secho(f"    ! tasks will fail at runtime until {draft_count} skill(s) are built.", fg="yellow")
         else:
-            click.secho("    skipped (run later: commando build-skills --apply)", fg="bright_black")
-            click.secho(f"    ! tasks will fail at runtime until {draft_count} skill(s) are built.", fg="yellow")
+            click.echo("    No headless LLM auth detected (no ANTHROPIC_API_KEY).")
+            click.echo("    Best path: have your IDE agent (Cascade / Cursor / Claude Code)")
+            click.echo("    write the bodies in-conversation — no subprocess, no auth issues.")
+            click.echo()
+            click.echo("    Run this in your terminal:")
+            click.secho("      commando build-skills --print-prompts", fg="green")
+            click.echo()
+            click.echo("    then paste the printed block into your IDE agent.")
+            click.echo()
+            click.echo("    Alternatives:")
+            click.echo("      · export ANTHROPIC_API_KEY=… then re-run go-live")
+            click.echo("      · commando build-skills --apply  (will try subprocess + show fix")
+            click.echo("        instructions if auth fails)")
 
     # ── Step 5 · Install schedule into launchd ───────────────────────────────
     click.echo()

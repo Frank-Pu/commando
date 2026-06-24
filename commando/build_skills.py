@@ -198,7 +198,97 @@ def _build_one(agent_dir: Path, skill_path: Path, charter: str, playbook: str,
 # Public entry
 # ──────────────────────────────────────────────────────────────────────────────
 
-def run(target: str, skill_id: str = None, apply: bool = False, force: bool = False) -> None:
+def _print_host_agent_prompt(skill_files, charter: str, playbook: str,
+                             agent_dir: Path, force: bool) -> int:
+    """Print ONE self-contained meta-prompt the host agent (Cascade / Cursor /
+    Claude Code / etc.) can paste-execute itself — no subprocess, no auth.
+
+    Returns count of skills that would be built.
+    """
+    drafts = []
+    for sp in skill_files:
+        fm, _ = _read_skill(sp)
+        status = fm.get("status", "draft")
+        if status == "active" and not force:
+            continue
+        if status == "imported-placeholder":
+            continue
+        drafts.append((sp, fm))
+
+    if not drafts:
+        click.echo()
+        click.secho("  Nothing to print — no draft skills.", fg="green")
+        return 0
+
+    click.echo()
+    click.secho("  ─── COPY everything below this line into your AI agent ───", fg="cyan", bold=True)
+    click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo(f"You're going to author the prompt body for {len(drafts)} draft Skill(s)")
+    click.echo("in this commando agent. You already have full Onboarding context in")
+    click.echo("this conversation, so this should be straightforward.")
+    click.echo()
+    click.echo("For EACH draft skill listed below:")
+    click.echo("  1. Read the existing SKILL.md (note its frontmatter + intro)")
+    click.echo("  2. Write a NEW prompt body following the rules in the META_GUIDE section")
+    click.echo("  3. Use your file-write tool to overwrite SKILL.md with:")
+    click.echo("       - the SAME frontmatter, BUT change `status: draft` → `status: active`")
+    click.echo("       - your new prompt body below the frontmatter")
+    click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo("META_GUIDE for writing each Skill body:")
+    click.echo()
+    click.echo(META_PROMPT_TEMPLATE.format(
+        charter="<see CHARTER block below — apply it to every skill>",
+        skill_metadata="<see PER_SKILL list below — one entry per skill>",
+        playbook="<see PLAYBOOK block below — apply to every skill>",
+        skill_name="<skill-name, from frontmatter>",
+    ))
+    click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo("CHARTER (the agent's constitution — same for all skills):")
+    click.echo()
+    click.echo(charter)
+    click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo("PLAYBOOK (general patterns for this role family):")
+    click.echo()
+    click.echo(playbook[:8000] if playbook else "(no playbook found)")
+    click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo(f"PER_SKILL list — write a body for each, then overwrite the SKILL.md:")
+    click.echo()
+    import yaml
+    for sp, fm in drafts:
+        click.echo("-" * 70)
+        click.echo(f"  Skill name: {fm.get('name', sp.parent.name)}")
+        click.echo(f"  Write to:   {sp}")
+        click.echo(f"  Description: {fm.get('description', '(none)')}")
+        click.echo(f"  Tags: {fm.get('tags', [])}")
+        click.echo(f"  Capability requirements: {fm.get('capability_requirements', [])}")
+        click.echo()
+        body_intro = "\n".join((sp.read_text(encoding="utf-8").split("---\n", 2)[-1]).split("\n")[:20])
+        click.echo(f"  Onboarding-scaffolded intro (extend, don't discard):")
+        for line in body_intro.split("\n"):
+            click.echo(f"    {line}")
+        click.echo()
+    click.echo("=" * 70)
+    click.echo()
+    click.echo(f"When done, run `commando status --agent-dir {agent_dir}` — it should")
+    click.echo(f"show {len(drafts)} more active skill(s).")
+    click.echo()
+    click.secho("  ─── END copy region ───", fg="cyan", bold=True)
+    click.echo()
+    return len(drafts)
+
+
+def run(target: str, skill_id: str = None, apply: bool = False, force: bool = False,
+        print_prompts: bool = False) -> None:
     agent_dir = Path(target).resolve()
 
     click.echo()
@@ -234,6 +324,10 @@ def run(target: str, skill_id: str = None, apply: bool = False, force: bool = Fa
 
     if not skill_files:
         click.echo("\n  No skills found in skills/.")
+        return
+
+    if print_prompts:
+        n = _print_host_agent_prompt(skill_files, charter, playbook, agent_dir, force)
         return
 
     click.echo()

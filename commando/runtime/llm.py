@@ -140,7 +140,27 @@ def _call_via_cli(cli_name: str, system: str, user: str, model: str) -> dict:
                 f"Note: {cli_name} integration is community-stubbed. If the flag\n"
                 f"      structure differs in your version, please PR commando/runtime/llm.py."
             )
-        raise RuntimeError(f"{cli_name} CLI failed (rc={r.returncode}): {err[:400]}")
+        # claude / verified CLI failed — most common cause is auth not in subprocess
+        is_auth = any(s in err.lower() for s in ("403", "forbidden", "unauthorized", "auth"))
+        hint = ""
+        if is_auth:
+            hint = (
+                "\n\n  This looks like a subprocess auth failure — your interactive\n"
+                "  CLI auth doesn't propagate to subprocesses. Three fixes:\n"
+                "\n"
+                "    1) Best for IDE users (Cascade / Cursor / Claude Code):\n"
+                "         commando build-skills --print-prompts\n"
+                "       Print a self-contained prompt your IDE agent can run itself,\n"
+                "       no subprocess, no API key.\n"
+                "\n"
+                "    2) Headless mode — set an API key for the subprocess:\n"
+                "         export ANTHROPIC_API_KEY=sk-ant-…\n"
+                "       (or write to credentials/anthropic.yaml)\n"
+                "\n"
+                "    3) Try a different backend:\n"
+                "         export COMMANDO_LLM=codex   # or kimi / glm / qwen / …"
+            )
+        raise RuntimeError(f"{cli_name} CLI failed (rc={r.returncode}): {err[:400]}{hint}")
 
     return {
         "backend": f"{cli_name}-cli",

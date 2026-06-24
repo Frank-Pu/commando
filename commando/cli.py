@@ -41,12 +41,13 @@ from commando import __version__
     help=(
         "commando — Runtime is commodity. Configuration is the moat.\n"
         "\n"
-        "  First time here? Run these three in order:\n"
-        "    1)  commando onboard         # 25 min — produces ./my-agent/\n"
-        "    2)  commando build-skills --apply   # fill in Skill prompt bodies\n"
-        "    3)  commando go-live         # validate + connect IM + install schedule\n"
+        "\b\n"
+        "First time here? Run these three in order:\n"
+        "  1) commando onboard               # 25 min — produces ./my-agent/\n"
+        "  2) commando build-skills --apply  # fill in Skill prompt bodies\n"
+        "  3) commando go-live               # connect IM + install schedule\n"
         "\n"
-        "  Then:  commando status / commando dashboard / commando run --task <id>"
+        "Then: commando status / commando dashboard / commando run --task <id>"
     ),
 )
 @click.version_option(version=__version__, prog_name="commando")
@@ -193,10 +194,12 @@ def run(task_id, target, apply, inputs):
               help="Build only one skill by id (e.g. xhs-bilingual-bridge).")
 @click.option("--apply", is_flag=True, help="Actually call LLM + rewrite SKILL.md (default: dry-run).")
 @click.option("--force", is_flag=True, help="Rebuild even Skills already marked status: active.")
-def build_skills(target, skill_id, apply, force):
+@click.option("--print-prompts", is_flag=True,
+              help="Print a self-contained prompt for your IDE agent (Cascade / Cursor / Claude Code) to execute — no subprocess, no API key.")
+def build_skills(target, skill_id, apply, force, print_prompts):
     from commando.build_skills import run as _run
 
-    _run(target, skill_id=skill_id, apply=apply, force=force)
+    _run(target, skill_id=skill_id, apply=apply, force=force, print_prompts=print_prompts)
 
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -62,6 +62,18 @@ commando onboard --print-prompt    # 直接打印一段可粘贴的 kickoff prom
 
 完成后回到终端跑 `commando go-live`（这部分不需要 IDE，纯 CLI 就行）。
 
+### IDE 用户的 build-skills 也不需要 API key
+
+Onboarding 产出的 draft skills 需要 LLM 来填 prompt body。**如果你只用 IDE 没装 API key**，subprocess 调 `claude -p` 会撞 auth 失败（dogfood 实测）。这时候用：
+
+```bash
+commando build-skills --print-prompts
+```
+
+它会打印一份**完整自洽的元提示词**（含 charter + playbook + 每个 draft skill 的元信息），你直接粘进你的 IDE agent（Cascade / Cursor / Claude Code 都行），让宿主 agent 自己一次性把所有 SKILL.md 写好。没 subprocess、没 API key、不需要任何额外配置。
+
+`commando go-live` 的 Step 4 检测到你没 `ANTHROPIC_API_KEY` 时也会自动推荐这条路径。
+
 验证：
 
 ```bash

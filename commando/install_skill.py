@@ -296,12 +296,17 @@ def run(source: str, target: str, paste: bool, no_rebuild: bool,
     click.echo()
     click.secho("  Step 4 · Adapt to your Charter?", bold=True)
     click.echo()
+    upstream_status = fm.get("status", "draft")
     if no_rebuild:
         click.secho("    ⊘ skipped per --no-rebuild", fg="bright_black")
+    elif upstream_status == "active":
+        # Upstream already has a complete body; rebuild only if user is explicit.
+        click.echo(f"    ⊘ upstream is already status: active — keeping its body as-is.")
+        click.echo(f"      (Run `commando build-skills --skill {name} --force --apply` later")
+        click.echo(f"       if you decide you DO want to adapt it to your Charter.)")
     else:
-        click.echo("    This Skill was authored for a different agent. You can rebuild")
-        click.echo("    its prompt body against YOUR Charter so its voice / red lines /")
-        click.echo("    ICP knowledge match. (Recommended for cross-domain skills.)")
+        click.echo("    This Skill is a draft scaffold. Its prompt body should be authored")
+        click.echo("    against YOUR Charter so voice / red lines / ICP match.")
         click.echo()
         if yes or click.confirm("    Rebuild prompt body for this agent now?", default=True):
             click.echo()
