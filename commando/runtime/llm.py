@@ -120,6 +120,23 @@ def _load_anthropic_key(agent_dir: Path) -> Optional[str]:
     return None
 
 
+def _load_zhipu_key(agent_dir: Path) -> Optional[str]:
+    """ZhipuAI (智谱) API key — checked from env or credentials/zhipu.yaml.
+    Round 3 dogfood used GLM in Windsurf via the print-prompts path; this
+    SDK fallback is for headless cron with the same provider."""
+    env_key = os.environ.get("ZHIPU_API_KEY") or os.environ.get("ZHIPUAI_API_KEY")
+    if env_key:
+        return env_key
+    cred = agent_dir / "credentials" / "zhipu.yaml"
+    if cred.exists():
+        try:
+            import yaml  # type: ignore
+            return (yaml.safe_load(cred.read_text(encoding="utf-8")) or {}).get("api_key")
+        except Exception:
+            return None
+    return None
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # Backend invocations
 # ──────────────────────────────────────────────────────────────────────────────
@@ -172,6 +189,37 @@ def _call_via_cli(cli_name: str, system: str, user: str, model: str) -> dict:
     }
 
 
+def _call_via_zhipu_sdk(api_key: str, system: str, user: str, model: str,
+                        max_tokens: int) -> dict:
+    """ZhipuAI Python SDK. Install: pip install zhipuai
+    Round 3 dogfood validated GLM as agent backend via Windsurf print-prompts;
+    this SDK path is the equivalent for headless cron."""
+    try:
+        from zhipuai import ZhipuAI  # type: ignore
+    except ImportError:
+        raise RuntimeError("zhipuai SDK not installed. Run: pip install zhipuai")
+    client = ZhipuAI(api_key=api_key)
+    # GLM uses an OpenAI-compatible chat.completions API.
+    glm_model = model if model.startswith("glm-") else "glm-4-plus"
+    resp = client.chat.completions.create(
+        model=glm_model,
+        max_tokens=max_tokens,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    )
+    msg = resp.choices[0].message
+    return {
+        "backend": "zhipu-sdk",
+        "response_text": msg.content or "",
+        "model": glm_model,
+        "input_tokens": getattr(resp.usage, "prompt_tokens", 0) if resp.usage else 0,
+        "output_tokens": getattr(resp.usage, "completion_tokens", 0) if resp.usage else 0,
+        "stop_reason": resp.choices[0].finish_reason or "stop",
+    }
+
+
 def _call_via_anthropic_sdk(api_key: str, system: str, user: str, model: str,
                             max_tokens: int) -> dict:
     try:
@@ -217,18 +265,25 @@ def call_skill(
     if cli:
         return _call_via_cli(cli, system_prompt, user_message, model)
 
-    # No CLI found → only viable path is API key for headless cron
+    # No CLI found → try API-key fallbacks for headless cron, in priority order
     api_key = _load_anthropic_key(agent_dir)
     if api_key:
         return _call_via_anthropic_sdk(api_key, system_prompt, user_message, model, max_tokens)
 
+    zhipu_key = _load_zhipu_key(agent_dir)
+    if zhipu_key:
+        return _call_via_zhipu_sdk(zhipu_key, system_prompt, user_message, model, max_tokens)
+
     raise RuntimeError(
         "no LLM backend available.\n"
-        "  · Easiest: install an agent CLI you already use:\n"
+        "  · Easiest (works in any IDE — verified Round 3 with GLM in Windsurf):\n"
+        "       commando build-skills --print-prompts\n"
+        "       (lets your IDE agent author Skill bodies — no API key needed)\n"
+        "  · For headless cron use (no interactive login):\n"
+        "       export ANTHROPIC_API_KEY=sk-ant-…    (or credentials/anthropic.yaml)\n"
+        "       export ZHIPU_API_KEY=…               (or credentials/zhipu.yaml — for GLM)\n"
+        "  · Or install an agent CLI:\n"
         "       Claude Code:  https://docs.claude.com/en/docs/claude-code\n"
         "       OpenAI Codex: https://github.com/openai/codex\n"
-        "       Kimi / GLM / Qwen / Doubao / MiniMax CLIs: see their respective docs\n"
-        "  · For headless cron use (no interactive login):\n"
-        "       export ANTHROPIC_API_KEY=sk-ant-…\n"
-        "       (or write to my-agent/credentials/anthropic.yaml)"
+        "       Kimi / GLM / Qwen / Doubao / MiniMax CLIs: see their respective docs"
     )

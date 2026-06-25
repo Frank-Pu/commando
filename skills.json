@@ -1,9 +1,48 @@
 {
   "$schema": "./docs/skills-registry-schema.md",
-  "version": "0.1",
-  "updated": "2026-06-10",
-  "description": "commando Skill registry — 社区贡献的可复用 Skill 索引。新增请发 PR。",
+  "version": "0.2",
+  "updated": "2026-06-25",
+  "description": "commando Skill registry — 社区贡献的可复用 Skill 索引。新增请发 PR 到这个文件 + 在 registry/ 加 SKILL.md。",
   "skills": [
+    {
+      "id": "commando/daily-briefing",
+      "title": "每日晨间简报",
+      "summary": "5 行内告诉用户：昨天发生了什么 / 今天会自动跑什么 / 哪里需要拍板。通用，build-skills 后按用户 charter 自适应。",
+      "playbooks": [],
+      "tags": ["daily", "briefing", "observability", "universal"],
+      "status": "available",
+      "source_url": "https://raw.githubusercontent.com/Frank-Pu/commando/main/registry/daily-briefing/SKILL.md",
+      "license": "MIT",
+      "adapts_to": "universal",
+      "verified": true,
+      "verified_at": "2026-06-25"
+    },
+    {
+      "id": "commando/meeting-debrief",
+      "title": "会议复盘",
+      "summary": "把会议笔记凝结成 3 个结论 + N 个 action items + Semantic insights，自动起草 follow-up。",
+      "playbooks": [],
+      "tags": ["meeting", "debrief", "semantic-memory", "universal"],
+      "status": "available",
+      "source_url": "https://raw.githubusercontent.com/Frank-Pu/commando/main/registry/meeting-debrief/SKILL.md",
+      "license": "MIT",
+      "adapts_to": "universal",
+      "verified": true,
+      "verified_at": "2026-06-25"
+    },
+    {
+      "id": "commando/competitive-watch",
+      "title": "竞品追踪",
+      "summary": "每周扫 N 个竞品的产品页 / changelog / 社媒，diff 出真实变化 + 强制对每条作出'跟进 / 观察 / 反向定位'决议。",
+      "playbooks": [],
+      "tags": ["competitive", "weekly", "market-watch", "universal"],
+      "status": "available",
+      "source_url": "https://raw.githubusercontent.com/Frank-Pu/commando/main/registry/competitive-watch/SKILL.md",
+      "license": "MIT",
+      "adapts_to": "universal",
+      "verified": true,
+      "verified_at": "2026-06-25"
+    },
     {
       "id": "frank-pu/xhs-bilingual-bridge",
       "title": "小红书 Bilingual Bridge 图文 Skill",
@@ -12,7 +51,7 @@
       "tags": ["xiaohongshu", "content", "bilingual"],
       "status": "planned",
       "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills/xhs-bilingual-bridge",
-      "note": "尚未正式发布到 registry，待 atu 抽象后上架。"
+      "note": "atu 仓库私有，待抽象后上架到 registry/。"
     },
     {
       "id": "frank-pu/reddit-source-mining",
@@ -22,7 +61,7 @@
       "tags": ["reddit", "content", "source-mining"],
       "status": "planned",
       "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills/reddit-source-mining",
-      "note": "尚未正式发布到 registry，待 atu 抽象后上架。"
+      "note": "atu 仓库私有，待抽象后上架到 registry/。"
     },
     {
       "id": "frank-pu/marketing-kit",
@@ -32,7 +71,7 @@
       "tags": ["marketing", "kit"],
       "status": "planned",
       "source_url": "https://github.com/Frank-Pu/atu/tree/main/configuration/skills",
-      "note": "atu 跑了半年的成熟版本，待打包成 commando Skill bundle。"
+      "note": "atu 跑了半年的成熟版本，待抽象后上架。"
     }
   ]
 }

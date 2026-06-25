@@ -61,20 +61,29 @@ def _fetch_url(url: str) -> str:
 
 
 def _fetch_registry(handle: str) -> Tuple[str, dict]:
-    """Returns (content, registry_entry). Handle like '@frank-pu/skill-name'."""
+    """Returns (content, registry_entry). Handle like '@commando/daily-briefing'
+    or 'commando/daily-briefing' (with or without leading @)."""
     skills_json = REPO_ROOT / "skills.json"
     if not skills_json.exists():
         raise RuntimeError("skills.json not found in repo root.")
     data = json.loads(skills_json.read_text(encoding="utf-8"))
     entries = data.get("skills") if isinstance(data, dict) else data
+    # Normalize: @author/name OR author/name → author/name
+    needle = handle.lstrip("@")
     if isinstance(entries, list):
-        entries = {e.get("handle") or e.get("name"): e for e in entries}
+        entries = {
+            (e.get("id") or e.get("handle") or e.get("name") or "").lstrip("@"): e
+            for e in entries
+        }
 
-    entry = entries.get(handle)
+    entry = entries.get(needle)
     if not entry:
+        # Show what IS available so the user can self-correct
+        available = sorted(k for k, e in entries.items() if e.get("status") == "available")
+        avail_msg = ("\n\n  Available now:\n    " + "\n    ".join(f"@{k}" for k in available)) if available else ""
         raise RuntimeError(
-            f"{handle} not in Registry.\n"
-            f"  Try one of:\n"
+            f"{handle} not in Registry.{avail_msg}\n\n"
+            f"  Other paths:\n"
             f"    · pass a GitHub URL directly:  commando install <url>\n"
             f"    · paste manually:               commando install --paste\n"
             f"    · PR to add it:                 edit skills.json"
@@ -90,6 +99,20 @@ def _fetch_registry(handle: str) -> Tuple[str, dict]:
     source_url = entry.get("source_url")
     if not source_url:
         raise RuntimeError(f"{handle} has no source_url in Registry.")
+
+    # Local fallback: if this entry points to our own registry/ folder,
+    # read it from disk so install works immediately (before the URL is
+    # public, or when offline).
+    if source_url.startswith("https://raw.githubusercontent.com/Frank-Pu/commando/"):
+        # Try to map URL → local path
+        try:
+            tail = source_url.split("/main/", 1)[1]   # e.g. "registry/daily-briefing/SKILL.md"
+            local_path = REPO_ROOT / tail
+            if local_path.exists():
+                return local_path.read_text(encoding="utf-8"), entry
+        except Exception:
+            pass  # fall through to URL fetch
+
     return _fetch_url(source_url), entry
 
 
