@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="dashboard/ant.svg" alt="commando" width="100" />
+  <strong>English</strong>
+  &nbsp;·&nbsp;
+  <a href="README.zh-CN.md">中文</a>
 </p>
 
 # commando
 
-> **Configure your own AI digital employee in 25 minutes.** It runs on whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini.
-
-[中文 README →](README.zh-CN.md)
+> **Configure your own AI digital partner in 25 minutes.** It runs on whatever AI tool you already use — Claude Code, Cursor, Windsurf, Codex, Kimi, GLM, Qwen, Doubao, MiniMax, Gemini.
 
 You spend 25 minutes in conversation with your AI tool. It produces `my-agent/` on disk — a Charter, a Schedule, a set of Skills. The OS scheduler runs them. The output lands in your existing Feishu / Notion / IM. **The agent is files you own**, not a SaaS you rent.
 
@@ -17,11 +17,11 @@ commando build-skills    # fill in Skill prompt bodies
 commando go-live         # connect IM + install schedule
 ```
 
-Tomorrow at 8am, your digital employee fires its first task and pings you on IM.
+Tomorrow at 8am, your digital partner fires its first task and pings you on IM.
 
 ---
 
-## What does a digital employee look like?
+## What does a digital partner look like?
 
 Three real configurations to make it concrete:
 

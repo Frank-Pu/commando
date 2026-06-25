@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="dashboard/ant.svg" alt="commando" width="100" />
+  <a href="README.md">English</a>
+  &nbsp;·&nbsp;
+  <strong>中文</strong>
 </p>
 
 # commando
 
-> **用 25 分钟，配出一个属于你自己的 AI 数字员工。** 跑在你已经在用的 AI 工具上——Claude Code、Cursor、Windsurf、Codex、Kimi、GLM、Qwen、豆包、MiniMax、Gemini 都行。
+> **用 25 分钟，配出一个属于你自己的 AI 数字搭档。** 跑在你已经在用的 AI 工具上——Claude Code、Cursor、Windsurf、Codex、Kimi、GLM、Qwen、豆包、MiniMax、Gemini 都行。
 
-[← English README](README.md)
-
-你花 25 分钟跟你的 AI 工具对话，它在磁盘上产出 `my-agent/` 目录——Charter（章程）+ Schedule（排班）+ Skills（技能）。系统的定时器跑这些 Skill，输出推到你已经在用的飞书 / Notion / IM 里。**这个数字员工是你拥有的文件**，不是租来的 SaaS。
+你花 25 分钟跟你的 AI 工具对话，它在磁盘上产出 `my-agent/` 目录——Charter（章程）+ Schedule（排班）+ Skills（技能）。系统的定时器跑这些 Skill，输出推到你已经在用的飞书 / Notion / IM 里。**这个数字搭档是你拥有的文件**，不是租来的 SaaS。
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh
@@ -17,11 +17,11 @@ commando build-skills    # 填好每个 Skill 的 prompt body
 commando go-live         # 接 IM + 装定时调度
 ```
 
-第二天早上 8 点，你的数字员工开始跑第一个任务，飞书弹卡片找你审稿。
+第二天早上 8 点，你的数字搭档开始跑第一个任务，飞书弹卡片找你审稿。
 
 ---
 
-## 数字员工长什么样？
+## 数字搭档长什么样？
 
 三个真实的 Configuration 例子，看完你就懂这个工具能干嘛：
 
@@ -51,7 +51,7 @@ commando go-live         # 接 IM + 装定时调度
 
 |   | **commando** | ChatGPT / GPTs | LangChain / Agent 框架 | Zapier + LLM |
 |---|---|---|---|---|
-| 数字员工归你所有 | ✅ 文件在你的仓库里 | ❌ 锁在 OpenAI 上 | ✅ 代码在你仓库 | ❌ 锁在 Zapier 上 |
+| 数字搭档归你所有 | ✅ 文件在你的仓库里 | ❌ 锁在 OpenAI 上 | ✅ 代码在你仓库 | ❌ 锁在 Zapier 上 |
 | 自由选 LLM | ✅ 任意（Claude / GLM / Kimi …）| ❌ 只能 OpenAI | ⚠️ 每换一家都改代码 | ⚠️ 只能用它的集成 |
 | 用操作系统定时器调度 | ✅ launchd / systemd / cron | ❌ 不支持 | ⚠️ 自己写 | ✅（用它的 cron） |
 | 输出推到你自己的工具 | ✅ 飞书 / Notion / IM | ❌ 只在 ChatGPT 里 | ⚠️ 自己接 | ✅（用它的集成） |
@@ -66,7 +66,7 @@ commando go-live         # 接 IM + 装定时调度
 
 | 层 | 是什么 | 谁来管 |
 |---|---|---|
-| **Charter（章程）** | 数字员工的宪法——身份、风格、ICP、红线。每次调用自动注入。 | 你写的 `charter.md` |
+| **Charter（章程）** | 数字搭档的宪法——身份、风格、ICP、红线。每次调用自动注入。 | 你写的 `charter.md` |
 | **Skills（技能）** | 离散的任务能力（写一篇笔记、复盘一场会议）。被 Schedule 或 IM 触发。 | `skills/*/SKILL.md` |
 | **Schedule（排班）** | 决定什么时候触发哪个 Skill。自动翻译成 launchd / systemd。 | `schedule.yaml` |
 
@@ -83,7 +83,7 @@ commando install @commando/competitive-watch   # 每周竞品 diff
 commando install https://github.com/…/SKILL.md # 任意 GitHub URL 都行
 ```
 
-Skill 装进来后会**根据你的 Charter 自动重 build**，让它的风格、ICP、红线和你的数字员工一致。
+Skill 装进来后会**根据你的 Charter 自动重 build**，让它的风格、ICP、红线和你的数字搭档一致。
 
 ---
 
