@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>commando — Configure your AI digital partner</title>
-<meta name="description" content="Configure your own AI digital partner in 25 minutes. Files you own, runs on whatever AI tool you already use." />
-<meta property="og:title" content="commando — Configure your AI digital partner" />
-<meta property="og:description" content="25-minute conversation produces a Charter, a Schedule, and a set of Skills you own as files. Runs on your choice of LLM." />
+<title>commando — Hire your AI tool. Don't just chat with it.</title>
+<meta name="description" content="commando turns the AI tools you already use — Claude Code, Codex, Cursor, Windsurf, Trae — into a real employee with a job description, a calendar, and a desk in your workspace." />
+<meta property="og:title" content="commando — Hire your AI tool" />
+<meta property="og:description" content="Add a Role, a Schedule, and a Memory to your existing AI tool. He shows up at 8am, works through his tasks, and reports to you on Feishu." />
 <meta name="theme-color" content="#0d1817" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,7 +29,7 @@
   --font-display: 'Fraunces', Georgia, serif;
   --font-sans:    'IBM Plex Sans', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, monospace;
-  --container:    1080px;
+  --container:    1180px;
   --section-pad:  clamp(72px, 10vw, 128px);
 }
 
@@ -45,8 +45,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
-
-/* Background texture — subtle grid */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -57,11 +55,9 @@ body::before {
   background-size: 48px 48px;
   z-index: 0;
 }
-
 a { color: var(--teal); text-decoration: none; transition: color 0.15s; }
 a:hover { color: var(--coral); }
-
-.container { max-width: var(--container); margin: 0 auto; padding: 0 24px; position: relative; }
+.container { max-width: var(--container); margin: 0 auto; padding: 0 32px; position: relative; }
 
 /* ─────────── Nav ─────────── */
 nav.top {
@@ -83,54 +79,32 @@ nav.top .container {
   color: var(--text);
   font-variation-settings: 'opsz' 144;
 }
-.logo::before {
-  content: '·';
-  color: var(--coral);
-  margin-right: 4px;
-  font-size: 30px;
-  line-height: 0;
-  vertical-align: middle;
-}
-nav.top .links {
-  display: flex; gap: 24px; align-items: center;
-  font-size: 13px; font-weight: 500;
-}
+.logo::before { content: '·'; color: var(--coral); margin-right: 4px; font-size: 30px; line-height: 0; vertical-align: middle; }
+nav.top .links { display: flex; gap: 24px; align-items: center; font-size: 13px; font-weight: 500; }
 nav.top .links a { color: var(--text-dim); }
 nav.top .links a:hover { color: var(--text); }
-.lang-switch {
-  border: 1px solid var(--border);
-  padding: 4px 10px; border-radius: 6px;
-  font-family: var(--font-mono); font-size: 12px;
-}
+.lang-switch { border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 12px; }
 
-/* ─────────── Hero ─────────── */
-.hero {
-  padding: clamp(72px, 12vh, 140px) 0 var(--section-pad);
-  position: relative;
-}
+/* ─────────── Hero — 2 col widescreen ─────────── */
+.hero { padding: clamp(56px, 10vh, 110px) 0 var(--section-pad); position: relative; }
+.hero .container { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(48px, 6vw, 100px); align-items: center; }
+.hero-text { max-width: 600px; }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 24px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 24px;
 }
-.eyebrow::before {
-  content: '── ';
-  color: var(--teal-deep);
-}
+.eyebrow::before { content: '── '; color: var(--teal-deep); }
 h1.headline {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(40px, 6.5vw, 80px);
-  line-height: 1.05;
+  font-size: clamp(40px, 5.4vw, 68px);
+  line-height: 1.08;
   letter-spacing: -0.025em;
   color: var(--text);
   margin-bottom: 28px;
   font-variation-settings: 'opsz' 144, 'SOFT' 20;
-  max-width: 18ch;
 }
 h1.headline em {
   font-style: italic;
@@ -139,37 +113,12 @@ h1.headline em {
   font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 1;
 }
 .subhead {
-  font-size: clamp(16px, 1.6vw, 20px);
-  line-height: 1.55;
+  font-size: clamp(15px, 1.4vw, 18px);
+  line-height: 1.65;
   color: var(--text-dim);
-  max-width: 56ch;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 .subhead strong { color: var(--text); font-weight: 500; }
-
-.term {
-  background: var(--bg-deep);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px 24px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.8;
-  margin-bottom: 32px;
-  max-width: 640px;
-  position: relative;
-  overflow-x: auto;
-}
-.term::before {
-  content: '● ● ●';
-  position: absolute; top: 12px; right: 18px;
-  color: var(--text-faint);
-  font-size: 10px; letter-spacing: 4px;
-}
-.term .prompt { color: var(--teal); user-select: none; }
-.term .cmd    { color: var(--text); }
-.term .comment{ color: var(--text-faint); }
-
 .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -182,18 +131,90 @@ h1.headline em {
   transition: all 0.18s;
   letter-spacing: 0.01em;
 }
-.btn-primary {
-  background: var(--coral);
-  color: var(--bg-deep);
-  font-weight: 600;
-}
+.btn-primary { background: var(--coral); color: var(--bg-deep); font-weight: 600; }
 .btn-primary:hover { background: var(--coral-deep); transform: translateY(-1px); }
-.btn-ghost {
-  background: transparent;
-  color: var(--text);
-  border-color: var(--border);
-}
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn-ghost:hover { background: var(--bg-elev); border-color: var(--teal); }
+
+/* ─────────── Hero visual — ID badge ─────────── */
+.hero-visual { display: flex; align-items: center; justify-content: center; position: relative; }
+.id-badge {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  position: relative;
+  box-shadow:
+    0 24px 60px -20px rgba(62, 197, 190, 0.18),
+    0 0 0 1px rgba(62, 197, 190, 0.06) inset;
+  transform: rotate(-1.5deg);
+  transition: transform 0.3s;
+}
+.id-badge:hover { transform: rotate(0); }
+.id-badge::before {
+  content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+  width: 36px; height: 6px;
+  background: var(--text-faint);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+.badge-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.badge-role-label {
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold);
+}
+.badge-status { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--teal); }
+.badge-status::before {
+  content: ''; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--teal); box-shadow: 0 0 10px var(--teal);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.badge-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-variation-settings: 'opsz' 96;
+}
+.badge-name-en { font-family: var(--font-mono); color: var(--text-faint); font-size: 13px; font-weight: 400; margin-left: 8px; letter-spacing: 0.04em; }
+.badge-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  font-variation-settings: 'opsz' 18, 'SOFT' 60;
+}
+.badge-divider { border: none; border-top: 1px dashed var(--border); margin: 0 0 18px; }
+.badge-stack-label {
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-faint); margin-bottom: 8px;
+}
+.badge-stack {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 22px;
+}
+.badge-stack .plus { color: var(--coral); margin: 0 6px; }
+.badge-stats {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.9;
+}
+.badge-stats .live { color: var(--teal); }
+.badge-stats .review { color: var(--coral); }
 
 /* ─────────── Sections ─────────── */
 section { padding: var(--section-pad) 0; position: relative; }
@@ -201,19 +222,16 @@ section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-sof
 
 .section-label {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 16px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
 }
 .section-label::before { content: '§ '; color: var(--text-faint); }
 .section-title {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(28px, 3.6vw, 44px);
-  line-height: 1.15;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.18;
   letter-spacing: -0.02em;
   color: var(--text);
   margin-bottom: 18px;
@@ -222,64 +240,174 @@ section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-sof
 }
 .section-title em { font-style: italic; color: var(--gold); font-weight: 500; }
 .section-lede {
-  font-size: 17px;
-  line-height: 1.6;
+  font-size: 17px; line-height: 1.6;
   color: var(--text-dim);
-  max-width: 60ch;
+  max-width: 62ch;
   margin-bottom: 48px;
 }
+.section-centered { text-align: center; }
+.section-centered .section-title { margin-left: auto; margin-right: auto; max-width: 26ch; }
+.section-centered .section-lede { margin-left: auto; margin-right: auto; }
 
-/* ─────────── 3-up grid (What it does) ─────────── */
-.three-up {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.cell {
+/* ─────────── Where commando runs — tool grid ─────────── */
+.tool-buckets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.bucket {
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 28px 24px;
+  border-radius: 12px;
+  padding: 24px 22px;
   background: var(--bg-elev);
 }
-.cell .num {
+.bucket-num {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--teal);
+  font-size: 11px; letter-spacing: 0.16em; color: var(--teal);
   margin-bottom: 12px;
-  letter-spacing: 0.1em;
 }
-.cell h3 {
+.bucket h3 {
+  font-family: var(--font-display);
+  font-weight: 600; font-size: 20px;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px; color: var(--text);
+  font-variation-settings: 'opsz' 30;
+}
+.bucket p { font-size: 13px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.6; }
+.bucket-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.tool-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 9px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-soft);
+  border-radius: 5px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.tool-chip.dim { color: var(--text-faint); }
+.verdict {
+  margin-top: 36px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 64ch;
+  margin-left: auto; margin-right: auto;
+  font-variation-settings: 'opsz' 30, 'SOFT' 80;
+}
+.verdict strong { color: var(--text); font-style: normal; font-weight: 600; }
+
+/* ─────────── Hiring metaphor — 3-up ─────────── */
+.what-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.what-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px 28px;
+  background: var(--bg-elev);
+}
+.what-card .tag {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 14px;
+}
+.what-card h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 22px;
-  letter-spacing: -0.01em;
-  margin-bottom: 12px;
+  font-size: 24px;
+  letter-spacing: -0.015em;
   color: var(--text);
+  margin-bottom: 14px;
   font-variation-settings: 'opsz' 36;
 }
-.cell p {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.6;
+.what-card h3 em { font-style: italic; color: var(--gold); }
+.what-card p { font-size: 14px; color: var(--text-dim); line-height: 1.7; margin-bottom: 14px; }
+.what-card .tech {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-faint);
+  padding-top: 14px; border-top: 1px dashed var(--border);
 }
+.what-card .tech b { color: var(--coral); font-weight: 500; }
+
+/* ─────────── Skill personalization (killer feature) ─────────── */
+.skill-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.skill-left p { font-size: 15px; color: var(--text-dim); line-height: 1.75; margin-bottom: 16px; }
+.skill-left p:first-of-type { font-size: 17px; color: var(--text); font-family: var(--font-display); font-style: italic; line-height: 1.5; font-variation-settings: 'opsz' 30, 'SOFT' 60; }
+.skill-steps {
+  display: grid; gap: 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 32px 28px;
+}
+.skill-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
+  padding: 12px 0;
+}
+.skill-step:not(:last-child) { border-bottom: 1px dashed var(--border); padding-bottom: 18px; margin-bottom: 6px; }
+.skill-step .num {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--coral);
+  line-height: 1;
+  font-variation-settings: 'opsz' 48;
+  width: 36px;
+}
+.skill-step h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.skill-step p { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin: 0; }
+.skill-step code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--teal);
+  background: var(--bg-deep);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* ─────────── Terminal block ─────────── */
+.term {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  position: relative;
+  overflow-x: auto;
+}
+.term::before { content: '● ● ●'; position: absolute; top: 12px; right: 18px; color: var(--text-faint); font-size: 10px; letter-spacing: 4px; }
+.term .prompt { color: var(--teal); user-select: none; }
+.term .cmd { color: var(--text); }
+.term .comment { color: var(--text-faint); }
+.term .out { color: var(--text-dim); padding-left: 10px; }
+.term .out .ok { color: var(--teal); }
+.term .out .coral { color: var(--coral); }
 
 /* ─────────── Personas ─────────── */
 .persona {
   border-left: 2px solid var(--border);
   padding: 32px 32px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   background: var(--bg-elev);
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 12px 12px 0;
   transition: border-left-color 0.2s;
 }
 .persona:hover { border-left-color: var(--coral); }
-.persona .role {
+.persona .role-tag {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 8px;
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
 }
 .persona h3 {
   font-family: var(--font-display);
@@ -290,11 +418,7 @@ section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-sof
   margin-bottom: 6px;
   font-variation-settings: 'opsz' 48;
 }
-.persona .tag {
-  font-size: 14px;
-  color: var(--text-dim);
-  margin-bottom: 20px;
-}
+.persona .tag { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; }
 .persona .charter {
   font-family: var(--font-display);
   font-style: italic;
@@ -308,117 +432,83 @@ section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-sof
   margin-bottom: 14px;
   font-variation-settings: 'opsz' 24, 'SOFT' 60;
 }
-.persona .schedule {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  line-height: 1.8;
-}
+.persona .schedule { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); line-height: 1.85; margin-bottom: 12px; }
 .persona .schedule .tag-time { color: var(--teal); }
+.persona .powered { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); padding-top: 12px; border-top: 1px dashed var(--border); }
+.persona .powered b { color: var(--text-dim); }
 
-/* ─────────── Comparison ─────────── */
-.compare {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 14px;
+/* ─────────── Why commando (value bullets) ─────────── */
+.why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.why-card {
+  display: flex; gap: 18px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.compare th, .compare td {
-  padding: 14px 18px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-.compare tr:last-child th, .compare tr:last-child td { border-bottom: none; }
-.compare thead th {
-  background: var(--bg-deep);
-  color: var(--text-dim);
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-family: var(--font-mono);
-}
-.compare thead th:nth-child(2) {
-  color: var(--coral);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
-  text-transform: none;
-  letter-spacing: -0.01em;
-}
-.compare tbody th {
+  border-radius: 12px;
+  padding: 24px 22px;
   background: var(--bg-elev);
-  color: var(--text);
-  font-weight: 500;
-  width: 36%;
 }
-.compare tbody td { color: var(--text-dim); }
-.compare tbody td.col-us { color: var(--text); background: rgba(62, 197, 190, 0.04); }
-.compare tbody td .y { color: var(--teal); font-weight: 600; }
-.compare tbody td .n { color: var(--text-faint); }
-.compare tbody td .m { color: var(--gold); }
-
-/* ─────────── Install block (final CTA) ─────────── */
-.install-cta {
-  text-align: center;
-}
-.install-cta .term {
-  margin: 0 auto 32px;
-  text-align: left;
-}
-
-/* ─────────── Footer ─────────── */
-footer {
-  padding: 56px 0 64px;
-  border-top: 1px solid var(--border-soft);
-  margin-top: 0;
-}
-footer .container {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 20px;
-}
-footer .meta { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); }
-footer .meta a { color: var(--text-dim); }
-footer .built {
+.why-card .icon {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 13px;
-  color: var(--text-faint);
-  font-variation-settings: 'opsz' 18, 'WONK' 1;
+  font-weight: 600;
+  font-size: 32px;
+  color: var(--coral);
+  line-height: 1; flex-shrink: 0;
+  font-variation-settings: 'opsz' 48, 'WONK' 1;
 }
+.why-card h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.why-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+.why-card p b { color: var(--text); font-weight: 500; }
+
+/* ─────────── Final CTA ─────────── */
+.install-cta .term { margin: 0 auto 32px; text-align: left; max-width: 640px; }
+.install-cta .cta-row { justify-content: center; }
+
+/* ─────────── Footer ─────────── */
+footer { padding: 56px 0 64px; border-top: 1px solid var(--border-soft); }
+footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+footer .meta { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); }
+footer .meta a { color: var(--text-dim); }
+footer .built { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--text-faint); font-variation-settings: 'opsz' 18, 'WONK' 1; }
 
 /* ─────────── Animations ─────────── */
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.in { opacity: 1; transform: translateY(0); }
-
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.hero .eyebrow   { animation: fadeUp 0.7s ease 0.05s both; }
-.hero .headline  { animation: fadeUp 0.8s ease 0.15s both; }
-.hero .subhead   { animation: fadeUp 0.8s ease 0.25s both; }
-.hero .term      { animation: fadeUp 0.8s ease 0.35s both; }
-.hero .cta-row   { animation: fadeUp 0.8s ease 0.45s both; }
+.hero-text .eyebrow  { animation: fadeUp 0.7s ease 0.05s both; }
+.hero-text .headline { animation: fadeUp 0.8s ease 0.15s both; }
+.hero-text .subhead  { animation: fadeUp 0.8s ease 0.25s both; }
+.hero-text .cta-row  { animation: fadeUp 0.8s ease 0.35s both; }
+.hero-visual         { animation: fadeUp 0.9s ease 0.4s both; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01s !important;
-    transition-duration: 0.01s !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
   .reveal { opacity: 1; transform: none; }
 }
 
 /* ─────────── Responsive ─────────── */
-@media (max-width: 760px) {
-  .three-up { grid-template-columns: 1fr; }
-  nav.top .links { gap: 14px; font-size: 12px; }
-  .compare { font-size: 12px; }
-  .compare th, .compare td { padding: 10px 12px; }
+@media (max-width: 960px) {
+  .hero .container { grid-template-columns: 1fr; }
+  .hero-visual { margin-top: 48px; }
+  .skill-hero { grid-template-columns: 1fr; gap: 40px; }
+  .tool-buckets { grid-template-columns: 1fr; }
+  .what-grid { grid-template-columns: 1fr; }
+  .why-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  nav.top .links { gap: 12px; font-size: 12px; }
+  nav.top .links a:not(.lang-switch):nth-child(-n+3) { display: none; }
   .persona { padding: 24px 20px; }
+  .container { padding: 0 20px; }
 }
 </style>
 </head>
@@ -428,79 +518,198 @@ footer .built {
   <div class="container">
     <a href="#" class="logo">commando</a>
     <div class="links">
-      <a href="#what">What</a>
-      <a href="#how">How</a>
-      <a href="#why">Why</a>
+      <a href="#where">Where it runs</a>
+      <a href="#what">What it adds</a>
+      <a href="#skill">Skills</a>
       <a href="https://github.com/Frank-Pu/commando">GitHub ↗</a>
       <a href="zh-CN.html" class="lang-switch">中文</a>
     </div>
   </div>
 </nav>
 
+<!-- ─────────── Hero ─────────── -->
 <header class="hero">
   <div class="container">
-    <p class="eyebrow">Configuration framework · MIT · v0.1</p>
-    <h1 class="headline">Configure your AI<br/><em>digital partner</em> in&nbsp;25&nbsp;minutes.</h1>
-    <p class="subhead">
-      You spend 25 minutes in conversation with your AI tool. It produces <strong>files on your disk</strong>
-      — a Charter, a Schedule, a set of Skills. The OS scheduler runs them. The output lands in your existing
-      Feishu, Notion, or IM. <strong>The agent is yours.</strong>
-    </p>
-    <div class="term">
-<span class="comment"># 30 seconds, in any terminal</span><br/>
-<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando onboard</span>  <span class="comment"># 25-min dialog → ./my-agent/</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando go-live</span>  <span class="comment"># connect IM + install schedule</span>
+    <div class="hero-text">
+      <p class="eyebrow">For people who already use Claude Code, Cursor, Codex, Windsurf…</p>
+      <h1 class="headline">Hire your AI tool.<br/><em>Don't just chat</em> with it.</h1>
+      <p class="subhead">
+        commando layers on top of <strong>the AI tool you already use</strong> and turns it into a
+        real employee — with a <strong>job description</strong>, a <strong>calendar</strong>, and
+        a <strong>desk in your workspace</strong>. He shows up at 8am, works through his tasks,
+        and reports to you on Feishu.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">Get Started →</a>
+        <a class="btn btn-ghost" href="#where">How does it work?</a>
+      </div>
     </div>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">Get Started →</a>
-      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.md">Read the docs</a>
+    <div class="hero-visual">
+      <div class="id-badge">
+        <div class="badge-head">
+          <span class="badge-role-label">Growth partner</span>
+          <span class="badge-status">on duty</span>
+        </div>
+        <div class="badge-name">
+          阿土<span class="badge-name-en">Atu</span>
+        </div>
+        <p class="badge-tagline">"Plain. Data-first. Never marketing-speak.<br/>Knows my product like a co-founder."</p>
+        <hr class="badge-divider" />
+        <p class="badge-stack-label">Powered by</p>
+        <p class="badge-stack">Claude Code <span class="plus">+</span> commando</p>
+        <div class="badge-stats">
+          <span class="live">●</span> fired 4 tasks today &nbsp;·&nbsp; <span class="review">1 waiting</span> your review<br/>
+          <span style="color:var(--text-faint)">last 30 days · 87 outputs · 12 approved drafts</span>
+        </div>
+      </div>
     </div>
   </div>
 </header>
 
-<!-- ─────────── What it does ─────────── -->
-<section id="what" class="alt">
+<!-- ─────────── Where commando runs ─────────── -->
+<section id="where" class="alt">
   <div class="container">
-    <p class="section-label reveal">What it does</p>
-    <h2 class="section-title reveal">Configuration is what you <em>own</em>. We make it shareable.</h2>
+    <p class="section-label reveal">Where commando runs</p>
+    <h2 class="section-title reveal">Anywhere you already have <em>an AI agent</em>.</h2>
     <p class="section-lede reveal">
-      Three primitives. No SaaS lock-in. Your partner runs on whatever AI tool you already use.
+      commando isn't a new AI tool. It's a layer that drops onto whichever one you already use — turns it into a real employee instead of a chat box.
     </p>
-    <div class="three-up">
-      <div class="cell reveal">
-        <p class="num">01 — Charter</p>
-        <h3>The constitution</h3>
-        <p>Your partner's identity, voice, ICP, and red lines. Auto-injected into every call. A markdown file in your repo.</p>
+    <div class="tool-buckets">
+      <div class="bucket reveal">
+        <p class="bucket-num">1 — Plug into a CLI agent</p>
+        <h3>You live in the terminal</h3>
+        <p>commando installs as a CLI tool. Your existing CLI agent does the LLM work; commando gives it a Charter, a Schedule, and persistent Skills.</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">Claude Code</span>
+          <span class="tool-chip">Codex</span>
+          <span class="tool-chip">Kimi</span>
+          <span class="tool-chip">GLM</span>
+          <span class="tool-chip">Qwen</span>
+        </div>
       </div>
-      <div class="cell reveal">
-        <p class="num">02 — Skills</p>
-        <h3>The discrete tasks</h3>
-        <p>Write a post, debrief a meeting, scan competitors. Activated by Schedule or asked via IM. Each Skill is one SKILL.md.</p>
+      <div class="bucket reveal">
+        <p class="bucket-num">2 — Pair with your IDE</p>
+        <h3>You live in the IDE</h3>
+        <p>Open your repo in any AI-powered IDE. commando's Onboarding skill loads in the chat panel and produces your agent in 25 minutes.</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">Cursor</span>
+          <span class="tool-chip">Windsurf</span>
+          <span class="tool-chip">Trae</span>
+          <span class="tool-chip">VS Code Copilot</span>
+          <span class="tool-chip">JetBrains AI</span>
+        </div>
       </div>
-      <div class="cell reveal">
-        <p class="num">03 — Schedule</p>
-        <h3>When things fire</h3>
-        <p>Translated into <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">launchd</code> /
-        <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">systemd</code>. The OS runs your partner, not us.</p>
+      <div class="bucket reveal">
+        <p class="bucket-num">3 — On any cowork platform</p>
+        <h3>You live with your team</h3>
+        <p>Any platform with a base agent works — including cowork/devloop platforms emerging in China and the US. Wherever the agent runs, commando layers on top.</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">CoWork</span>
+          <span class="tool-chip">Claude Desktop</span>
+          <span class="tool-chip">ChatGPT Desktop</span>
+          <span class="tool-chip dim">your own</span>
+        </div>
+      </div>
+    </div>
+    <p class="verdict reveal">
+      Wherever there's a base agent running, commando turns it into a <strong>dedicated digital partner</strong> — one with a real job, real memory, and a desk in your Feishu / Notion workspace.
+    </p>
+  </div>
+</section>
+
+<!-- ─────────── What commando adds (hiring metaphor) ─────────── -->
+<section id="what">
+  <div class="container">
+    <p class="section-label reveal">What commando adds</p>
+    <h2 class="section-title reveal">A job, a calendar, and a <em>memory</em>.</h2>
+    <p class="section-lede reveal">
+      Hiring an employee, three things happen: you tell them their role, you put them on a calendar, you give them a desk where they store their work. commando does the same three things for the AI tool you already use.
+    </p>
+    <div class="what-grid">
+      <div class="what-card reveal">
+        <p class="tag">01 · The job description</p>
+        <h3>He remembers <em>who he is</em></h3>
+        <p>
+          A markdown file in your repo defines who this partner is — his role, the product he serves, his voice, his red lines. Every conversation auto-loads this. He never "forgets" between sessions.
+        </p>
+        <p class="tech">Files: <b>charter.md</b> · auto-injected every call</p>
+      </div>
+      <div class="what-card reveal">
+        <p class="tag">02 · The day's work</p>
+        <h3>He does <em>many things</em></h3>
+        <p>
+          Not one skill — many. Writes posts, debriefs meetings, scans competitors, summarizes user feedback. Like a real employee, he handles whatever is on his role's plate. You can hand him new work anytime.
+        </p>
+        <p class="tech">Files: <b>skills/*.md</b> · imported, custom, generated</p>
+      </div>
+      <div class="what-card reveal">
+        <p class="tag">03 · The calendar</p>
+        <h3>He shows up at <em>8am</em></h3>
+        <p>
+          Schedule says "morning brief at 8, draft review at 11, weekly reflection Sunday 7pm". The OS scheduler runs it — your partner does his work and reports to you on Feishu / Notion. You stay in your normal workflow.
+        </p>
+        <p class="tech">Files: <b>schedule.yaml</b> · launchd / systemd / cron</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─────────── Personas (concrete examples) ─────────── -->
-<section id="how">
+<!-- ─────────── Skill personalization (killer feature) ─────────── -->
+<section id="skill" class="alt">
   <div class="container">
-    <p class="section-label reveal">Three real configurations</p>
-    <h2 class="section-title reveal">What does a digital partner <em>actually</em> look like?</h2>
+    <p class="section-label reveal">Why his skills are different</p>
+    <h2 class="section-title reveal">Generic skills don't know <em>your business</em>. His do.</h2>
     <p class="section-lede reveal">
-      Below are three real Charters showing the range. Each is a few hundred lines of markdown that defines the agent.
+      Most AI tools today ship generic skills — "make a slide deck", "write code", "analyze data". Useful for everyone, perfect for no one. commando builds skills that actually understand your product, your users, your red lines.
+    </p>
+    <div class="skill-hero">
+      <div class="skill-left reveal">
+        <p>"My Growth Partner doesn't write generic Xiaohongshu posts. He writes them in <em>my</em> voice, for <em>my</em> ICP, using <em>my</em> bilingual bridge formula."</p>
+        <p>Three ways your partner gets skills that fit:</p>
+        <p><b style="color:var(--text)">1. Auto-generated during Onboarding.</b> 25 minutes of conversation produces skills tailored to your product, your users, your channels.</p>
+        <p><b style="color:var(--text)">2. Imported from the community.</b> Found a great skill someone published? One command pulls it in.</p>
+        <p><b style="color:var(--text)">3. Automatically rebuilt for YOUR role.</b> Imported skills don't stay generic — commando rebuilds their prompt against your Charter so they speak in your voice and respect your red lines.</p>
+      </div>
+      <div class="skill-steps reveal">
+        <div class="skill-step">
+          <div class="num">01</div>
+          <div>
+            <h4>Onboarding produces tailored skills</h4>
+            <p>25-min dialog → <code>skills/xhs-bilingual-bridge/</code> already knows your ICP is "Chinese students preparing for IELTS".</p>
+          </div>
+        </div>
+        <div class="skill-step">
+          <div class="num">02</div>
+          <div>
+            <h4>Install a community skill</h4>
+            <p><code>commando install @commando/competitive-watch</code> — pulls a generic competitor-scanning skill from the Registry.</p>
+          </div>
+        </div>
+        <div class="skill-step">
+          <div class="num">03</div>
+          <div>
+            <h4>Auto-rebuild against YOUR Charter</h4>
+            <p>commando rewrites the skill's prompt body. Now competitive-watch knows your ICP, your red lines, and which competitors to track. Speaks your voice.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── Personas ─────────── -->
+<section>
+  <div class="container">
+    <p class="section-label reveal">Three real digital partners</p>
+    <h2 class="section-title reveal">What does a hire <em>actually</em> look like?</h2>
+    <p class="section-lede reveal">
+      Below are three real Charters. Each takes 25 minutes of Onboarding to produce. Each is the same AI tool you already use, configured by commando into a specific role.
     </p>
 
     <div class="persona reveal">
-      <p class="role">Role · Growth partner</p>
+      <p class="role-tag">Role · Growth partner</p>
       <h3>For the indie product creator</h3>
-      <p class="tag">Live for 6+ months serving <a href="https://lemingle.com" style="color:var(--text-dim);text-decoration:underline;">LeMingle</a> — the canonical reference Configuration in this repo.</p>
+      <p class="tag">Live for 6+ months serving <a href="https://lemingle.com" style="color:var(--text-dim);text-decoration:underline;">LeMingle</a> — the reference Configuration in this repo.</p>
       <div class="charter">
         "I am [Product]'s growth partner. Voice: plain, data-first, never marketing-speak.<br/>
         Red lines: AIGC manual-edit ≥ 20%, zero outbound links on Xiaohongshu, marketing density ≤ 20%."
@@ -511,129 +720,105 @@ footer .built {
         <span class="tag-time">weekly_data_review</span> 16:00 Fri &nbsp;·&nbsp;
         <span class="tag-time">weekly_reflection</span> 19:00 Sun
       </div>
+      <p class="powered">Powered by <b>Claude Code + commando</b> · outputs land in <b>Feishu bitable</b></p>
     </div>
 
     <div class="persona reveal">
-      <p class="role">Role · Personal finance advisor</p>
+      <p class="role-tag">Role · Personal finance advisor</p>
       <h3>Always-on watcher of your accounts</h3>
-      <p class="tag">Illustrates how strong red lines make the partner safer than a generic assistant.</p>
+      <p class="tag">Shows how strong red lines make the partner safer than a generic assistant.</p>
       <div class="charter">
         "I am your personal finance advisor. Red lines: I never execute trades; I never predict markets;<br/>
-        I never recommend high-risk products; my quarterly reports must include a section 'where I might be wrong'."
+        I never recommend high-risk products; my quarterly reports must include 'where I might be wrong'."
       </div>
       <div class="schedule">
         <span class="tag-time">daily_portfolio_health</span> 07:00 &nbsp;·&nbsp;
         <span class="tag-time">monthly_tax_check</span> 1st 09:00 &nbsp;·&nbsp;
         <span class="tag-time">quarterly_rebalance_review</span> end-of-quarter
       </div>
+      <p class="powered">Powered by <b>Codex + commando</b> · outputs land in <b>Notion database</b></p>
     </div>
 
     <div class="persona reveal">
-      <p class="role">Role · Job search coach</p>
+      <p class="role-tag">Role · Job search coach</p>
       <h3>3-month sprint partner for switching roles</h3>
-      <p class="tag">Time-bounded relationships, with explicit failure criteria built into the Charter.</p>
+      <p class="tag">Time-bounded relationships with explicit failure criteria in the Charter.</p>
       <div class="charter">
         "I am your career-pivot coach. Voice: warm but no-water. Red lines: I won't pad your résumé;<br/>
         I won't help you dodge real weaknesses; if 3 months pass with no progress I will say so."
       </div>
       <div class="schedule">
         <span class="tag-time">daily_listing_scan</span> 09:00 &nbsp;·&nbsp;
-        <span class="tag-time">interview_debrief</span> manual &nbsp;·&nbsp;
+        <span class="tag-time">interview_debrief</span> on demand &nbsp;·&nbsp;
         <span class="tag-time">weekly_pacing_check</span> 19:00 Sun
+      </div>
+      <p class="powered">Powered by <b>Cursor + commando</b> · outputs land in <b>Obsidian vault</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── Why commando (no "yours to own" — augments your existing tools) ─────────── -->
+<section id="why" class="alt">
+  <div class="container">
+    <p class="section-label reveal">Why commando</p>
+    <h2 class="section-title reveal">Augments the AI tools you <em>already pay for</em>.</h2>
+    <p class="section-lede reveal">
+      You're already paying $20/mo for Claude or $20/mo for Cursor. commando doesn't replace either — it makes them stop forgetting, show up on time, and actually integrate with your workspace.
+    </p>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <span class="icon">①</span>
+        <div>
+          <h4>Persistent memory across sessions</h4>
+          <p>Charter + Semantic memory live on disk. Your partner remembers your product, your users, your last quarter's reflections. <b>Switch from Cursor to Claude Code anytime</b> — the memory comes with you.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">②</span>
+        <div>
+          <h4>Lives in your workspace, not a chat tab</h4>
+          <p>Outputs land in <b>Feishu bitable, Notion database, Obsidian vault</b> — wherever your team already works. Approval cards push to your IM. You don't have to remember to open ChatGPT.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">③</span>
+        <div>
+          <h4>Skills that know your product</h4>
+          <p>Onboarding produces skills tailored to your business. Imported community skills <b>auto-rebuild</b> against your Charter. No more generic "write a Xiaohongshu post" templates.</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">④</span>
+        <div>
+          <h4>Shows up at 8am, on its own</h4>
+          <p>The OS scheduler — launchd, systemd, cron — runs your partner. Daily briefings, weekly reflections, monthly tax checks. <b>No SaaS daemon, no cloud subscription.</b></p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─────────── Why commando ─────────── -->
-<section id="why" class="alt">
-  <div class="container">
-    <p class="section-label reveal">Why commando</p>
-    <h2 class="section-title reveal">Yours, <em>not rented</em>.</h2>
-    <p class="section-lede reveal">
-      Runtime is commodity. Configuration is the moat. So we deliberately don't compete on runtime — we make the configuration shareable, versionable, and yours.
-    </p>
-    <div class="reveal">
-    <table class="compare">
-      <thead>
-        <tr>
-          <th></th>
-          <th>commando</th>
-          <th>GPTs</th>
-          <th>LangChain</th>
-          <th>Zapier + LLM</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Yours to own</th>
-          <td class="col-us"><span class="y">✓</span> files in your repo</td>
-          <td><span class="n">✗</span> on OpenAI</td>
-          <td><span class="y">✓</span> code in your repo</td>
-          <td><span class="n">✗</span> on Zapier</td>
-        </tr>
-        <tr>
-          <th>Pick your LLM</th>
-          <td class="col-us"><span class="y">✓</span> Claude / GLM / Kimi / any</td>
-          <td><span class="n">✗</span> OpenAI only</td>
-          <td><span class="m">⚠</span> rewrite per provider</td>
-          <td><span class="m">⚠</span> integrations only</td>
-        </tr>
-        <tr>
-          <th>OS scheduling</th>
-          <td class="col-us"><span class="y">✓</span> launchd / systemd</td>
-          <td><span class="n">✗</span></td>
-          <td><span class="m">⚠</span> build yourself</td>
-          <td><span class="y">✓</span> their cron</td>
-        </tr>
-        <tr>
-          <th>Output to your tools</th>
-          <td class="col-us"><span class="y">✓</span> Feishu / Notion / IM</td>
-          <td><span class="n">✗</span> ChatGPT UI</td>
-          <td><span class="m">⚠</span> wire yourself</td>
-          <td><span class="y">✓</span> their integrations</td>
-        </tr>
-        <tr>
-          <th>Long-term memory</th>
-          <td class="col-us"><span class="y">✓</span> markdown on disk</td>
-          <td><span class="m">⚠</span> hidden context</td>
-          <td><span class="m">⚠</span> vector DB</td>
-          <td><span class="n">✗</span> none</td>
-        </tr>
-        <tr>
-          <th>Guided onboarding</th>
-          <td class="col-us"><span class="y">✓</span> 25-min dialog</td>
-          <td><span class="n">✗</span> DIY</td>
-          <td><span class="n">✗</span> DIY</td>
-          <td><span class="n">✗</span> DIY</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-</section>
-
 <!-- ─────────── Final CTA ─────────── -->
-<section class="install-cta">
+<section class="install-cta section-centered">
   <div class="container">
     <p class="section-label reveal">Get started</p>
-    <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;max-width:24ch;">Your partner runs <em>tomorrow morning</em>.</h2>
-    <p class="section-lede reveal" style="margin-left:auto;margin-right:auto;text-align:center;">
-      Install, onboard, go-live. Tomorrow at 8am, your partner fires its first task and pings you on IM.
+    <h2 class="section-title reveal">Your partner is on duty <em>tomorrow morning</em>.</h2>
+    <p class="section-lede reveal">
+      30-second install. 25-minute Onboarding. Day 1: he shows up at 8am, runs his Schedule, and pings you on IM.
     </p>
     <div class="reveal">
     <div class="term">
-<span class="comment"># step 1 · install (30 seconds)</span><br/>
+<span class="comment"># step 1 · install (30 seconds, in any terminal)</span><br/>
 <span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
 <br/>
-<span class="comment"># step 2 · 25-min dialog → produces ./my-agent/</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando onboard</span><br/>
+<span class="comment"># step 2 · 25-min Onboarding inside Claude Code / Cursor / Codex / ...</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span>          <span class="comment"># produces ./my-agent/</span><br/>
 <br/>
-<span class="comment"># step 3 · build Skill bodies + install OS scheduler + connect IM</span><br/>
+<span class="comment"># step 3 · personalize skills + connect IM + install OS scheduler</span><br/>
 <span class="prompt">$</span> <span class="cmd">commando build-skills</span><br/>
 <span class="prompt">$</span> <span class="cmd">commando go-live</span>
     </div>
-    <div class="cta-row" style="justify-content:center;">
+    <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">View on GitHub →</a>
       <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.md">Read the docs</a>
     </div>
@@ -647,12 +832,11 @@ footer .built {
       MIT · made by <a href="https://github.com/Frank-Pu">Frank PU</a> ·
       <a href="https://github.com/Frank-Pu/commando">github.com/Frank-Pu/commando</a>
     </p>
-    <p class="built">Runtime is commodity. Configuration is the moat.</p>
+    <p class="built">Augment what you already use.</p>
   </div>
 </footer>
 
 <script>
-// Reveal-on-scroll using IntersectionObserver — no library
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }

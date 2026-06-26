@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>commando — 配出一个属于你自己的 AI 数字搭档</title>
-<meta name="description" content="用 25 分钟，配出一个属于你自己的 AI 数字搭档。文件归你所有，跑在你已经在用的 AI 工具上。" />
-<meta property="og:title" content="commando — 25 分钟配出 AI 数字搭档" />
-<meta property="og:description" content="25 分钟对话产出 Charter / Schedule / Skills 文件，跑在你选的 LLM 上。" />
+<title>commando — 把你的 AI 工具雇成员工，不只是当聊天对象</title>
+<meta name="description" content="commando 装在你已经在用的 AI 工具旁边（Claude Code / Cursor / Codex / Windsurf / Trae），让它变成真正的数字员工——有岗位说明、有工作日历、有飞书工位。" />
+<meta property="og:title" content="commando — 把你的 AI 工具雇成员工" />
+<meta property="og:description" content="给你的 AI 工具一个岗位、一份日程、一个工位。他早上 8 点上岗，干完一天活，飞书汇报。" />
 <meta name="theme-color" content="#0d1817" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,7 +29,7 @@
   --font-display: 'Fraunces', 'Noto Serif SC', Georgia, serif;
   --font-sans:    'IBM Plex Sans', 'Noto Sans SC', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, monospace;
-  --container:    1080px;
+  --container:    1180px;
   --section-pad:  clamp(72px, 10vw, 128px);
 }
 
@@ -55,11 +55,9 @@ body::before {
   background-size: 48px 48px;
   z-index: 0;
 }
-
 a { color: var(--teal); text-decoration: none; transition: color 0.15s; }
 a:hover { color: var(--coral); }
-
-.container { max-width: var(--container); margin: 0 auto; padding: 0 24px; position: relative; }
+.container { max-width: var(--container); margin: 0 auto; padding: 0 32px; position: relative; }
 
 nav.top {
   position: sticky; top: 0; z-index: 50;
@@ -68,60 +66,30 @@ nav.top {
   background: rgba(13, 24, 23, 0.75);
   border-bottom: 1px solid var(--border-soft);
 }
-nav.top .container {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-top: 16px; padding-bottom: 16px;
-}
-.logo {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  font-variation-settings: 'opsz' 144;
-}
-.logo::before {
-  content: '·';
-  color: var(--coral);
-  margin-right: 4px;
-  font-size: 30px;
-  line-height: 0;
-  vertical-align: middle;
-}
-nav.top .links {
-  display: flex; gap: 24px; align-items: center;
-  font-size: 13px; font-weight: 500;
-}
+nav.top .container { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; padding-bottom: 16px; }
+.logo { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--text); font-variation-settings: 'opsz' 144; }
+.logo::before { content: '·'; color: var(--coral); margin-right: 4px; font-size: 30px; line-height: 0; vertical-align: middle; }
+nav.top .links { display: flex; gap: 24px; align-items: center; font-size: 13px; font-weight: 500; }
 nav.top .links a { color: var(--text-dim); }
 nav.top .links a:hover { color: var(--text); }
-.lang-switch {
-  border: 1px solid var(--border);
-  padding: 4px 10px; border-radius: 6px;
-  font-family: var(--font-mono); font-size: 12px;
-}
+.lang-switch { border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-family: var(--font-mono); font-size: 12px; }
 
-.hero {
-  padding: clamp(72px, 12vh, 140px) 0 var(--section-pad);
-  position: relative;
-}
+/* Hero — 2 col widescreen */
+.hero { padding: clamp(56px, 10vh, 110px) 0 var(--section-pad); position: relative; }
+.hero .container { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(48px, 6vw, 100px); align-items: center; }
+.hero-text { max-width: 600px; }
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 24px;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 24px;
 }
-.eyebrow::before {
-  content: '── ';
-  color: var(--teal-deep);
-}
+.eyebrow::before { content: '── '; color: var(--teal-deep); }
 h1.headline {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(36px, 6vw, 72px);
-  line-height: 1.15;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.18;
   letter-spacing: -0.02em;
   color: var(--text);
   margin-bottom: 28px;
@@ -134,264 +102,160 @@ h1.headline em {
   font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 1;
 }
 .subhead {
-  font-size: clamp(15px, 1.5vw, 18px);
-  line-height: 1.75;
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.85;
   color: var(--text-dim);
-  max-width: 56ch;
-  margin-bottom: 40px;
+  margin-bottom: 36px;
 }
 .subhead strong { color: var(--text); font-weight: 500; }
-
-.term {
-  background: var(--bg-deep);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px 24px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  line-height: 1.8;
-  margin-bottom: 32px;
-  max-width: 640px;
-  position: relative;
-  overflow-x: auto;
-}
-.term::before {
-  content: '● ● ●';
-  position: absolute; top: 12px; right: 18px;
-  color: var(--text-faint);
-  font-size: 10px; letter-spacing: 4px;
-}
-.term .prompt { color: var(--teal); user-select: none; }
-.term .cmd    { color: var(--text); }
-.term .comment{ color: var(--text-faint); }
-
 .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 26px;
-  font-family: var(--font-sans);
-  font-size: 14px; font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.18s;
-  letter-spacing: 0.01em;
-}
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 26px; font-family: var(--font-sans); font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.18s; letter-spacing: 0.01em; }
 .btn-primary { background: var(--coral); color: var(--bg-deep); font-weight: 600; }
 .btn-primary:hover { background: var(--coral-deep); transform: translateY(-1px); }
 .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn-ghost:hover { background: var(--bg-elev); border-color: var(--teal); }
 
+/* ID badge */
+.hero-visual { display: flex; align-items: center; justify-content: center; position: relative; }
+.id-badge {
+  width: 100%; max-width: 440px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  position: relative;
+  box-shadow: 0 24px 60px -20px rgba(62, 197, 190, 0.18), 0 0 0 1px rgba(62, 197, 190, 0.06) inset;
+  transform: rotate(-1.5deg);
+  transition: transform 0.3s;
+}
+.id-badge:hover { transform: rotate(0); }
+.id-badge::before { content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 36px; height: 6px; background: var(--text-faint); border-radius: 4px; opacity: 0.5; }
+.badge-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.badge-role-label { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.badge-status { display: flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--teal); }
+.badge-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px var(--teal); animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.badge-name { font-family: var(--font-display); font-weight: 700; font-size: 30px; letter-spacing: -0.02em; color: var(--text); margin-bottom: 4px; font-variation-settings: 'opsz' 96; }
+.badge-name-en { font-family: var(--font-mono); color: var(--text-faint); font-size: 13px; font-weight: 400; margin-left: 8px; letter-spacing: 0.04em; }
+.badge-tagline { font-family: var(--font-display); font-style: italic; font-size: 14px; line-height: 1.7; color: var(--text-dim); margin-bottom: 24px; font-variation-settings: 'opsz' 18, 'SOFT' 60; }
+.badge-divider { border: none; border-top: 1px dashed var(--border); margin: 0 0 18px; }
+.badge-stack-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+.badge-stack { font-family: var(--font-mono); font-size: 13px; color: var(--text); margin-bottom: 22px; }
+.badge-stack .plus { color: var(--coral); margin: 0 6px; }
+.badge-stats { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); line-height: 1.9; }
+.badge-stats .live { color: var(--teal); }
+.badge-stats .review { color: var(--coral); }
+
+/* Sections */
 section { padding: var(--section-pad) 0; position: relative; }
 section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
-
-.section-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 16px;
-}
+.section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
 .section-label::before { content: '§ '; color: var(--text-faint); }
-.section-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(26px, 3.4vw, 40px);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  margin-bottom: 18px;
-  max-width: 24ch;
-  font-variation-settings: 'opsz' 96;
-}
+.section-title { font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 3.2vw, 42px); line-height: 1.3; letter-spacing: -0.01em; color: var(--text); margin-bottom: 18px; max-width: 24ch; font-variation-settings: 'opsz' 96; }
 .section-title em { font-style: italic; color: var(--gold); font-weight: 600; }
-.section-lede {
-  font-size: 16px;
-  line-height: 1.85;
-  color: var(--text-dim);
-  max-width: 60ch;
-  margin-bottom: 48px;
-}
+.section-lede { font-size: 16px; line-height: 1.85; color: var(--text-dim); max-width: 64ch; margin-bottom: 48px; }
+.section-centered { text-align: center; }
+.section-centered .section-title { margin-left: auto; margin-right: auto; max-width: 26ch; }
+.section-centered .section-lede { margin-left: auto; margin-right: auto; }
 
-.three-up {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-.cell {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 28px 24px;
-  background: var(--bg-elev);
-}
-.cell .num {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--teal);
-  margin-bottom: 12px;
-  letter-spacing: 0.1em;
-}
-.cell h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 22px;
-  letter-spacing: -0.005em;
-  margin-bottom: 12px;
-  color: var(--text);
-  font-variation-settings: 'opsz' 36;
-}
-.cell p {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.75;
-}
+/* Where it runs */
+.tool-buckets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.bucket { border: 1px solid var(--border); border-radius: 12px; padding: 24px 22px; background: var(--bg-elev); }
+.bucket-num { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--teal); margin-bottom: 12px; }
+.bucket h3 { font-family: var(--font-display); font-weight: 600; font-size: 20px; letter-spacing: -0.005em; margin-bottom: 8px; color: var(--text); font-variation-settings: 'opsz' 30; }
+.bucket p { font-size: 13px; color: var(--text-dim); margin-bottom: 14px; line-height: 1.75; }
+.bucket-tools { display: flex; flex-wrap: wrap; gap: 6px; }
+.tool-chip { font-family: var(--font-mono); font-size: 11px; padding: 4px 9px; background: var(--bg-deep); border: 1px solid var(--border-soft); border-radius: 5px; color: var(--text); white-space: nowrap; }
+.tool-chip.dim { color: var(--text-faint); }
+.verdict { margin-top: 36px; font-family: var(--font-display); font-style: italic; font-size: 18px; color: var(--text-dim); text-align: center; max-width: 64ch; margin-left: auto; margin-right: auto; line-height: 1.7; font-variation-settings: 'opsz' 30, 'SOFT' 80; }
+.verdict strong { color: var(--text); font-style: normal; font-weight: 600; }
 
-.persona {
-  border-left: 2px solid var(--border);
-  padding: 32px 32px;
-  margin-bottom: 28px;
-  background: var(--bg-elev);
-  border-radius: 0 10px 10px 0;
-  transition: border-left-color 0.2s;
-}
+/* Hiring metaphor 3-up */
+.what-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.what-card { border: 1px solid var(--border); border-radius: 12px; padding: 32px 28px; background: var(--bg-elev); }
+.what-card .tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); margin-bottom: 14px; }
+.what-card h3 { font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: -0.005em; color: var(--text); margin-bottom: 14px; font-variation-settings: 'opsz' 36; }
+.what-card h3 em { font-style: italic; color: var(--gold); }
+.what-card p { font-size: 14px; color: var(--text-dim); line-height: 1.85; margin-bottom: 14px; }
+.what-card .tech { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); padding-top: 14px; border-top: 1px dashed var(--border); }
+.what-card .tech b { color: var(--coral); font-weight: 500; }
+
+/* Skill section */
+.skill-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.skill-left p { font-size: 15px; color: var(--text-dim); line-height: 1.9; margin-bottom: 16px; }
+.skill-left p:first-of-type { font-size: 17px; color: var(--text); font-family: var(--font-display); font-style: italic; line-height: 1.7; font-variation-settings: 'opsz' 30, 'SOFT' 60; }
+.skill-steps { display: grid; gap: 14px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; padding: 32px 28px; }
+.skill-step { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start; padding: 12px 0; }
+.skill-step:not(:last-child) { border-bottom: 1px dashed var(--border); padding-bottom: 18px; margin-bottom: 6px; }
+.skill-step .num { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 28px; color: var(--coral); line-height: 1; font-variation-settings: 'opsz' 48; width: 36px; }
+.skill-step h4 { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--text); margin-bottom: 4px; letter-spacing: -0.005em; }
+.skill-step p { font-size: 13px; color: var(--text-dim); line-height: 1.7; margin: 0; }
+.skill-step code { font-family: var(--font-mono); font-size: 11px; color: var(--teal); background: var(--bg-deep); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+
+/* Terminal */
+.term { background: var(--bg-deep); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; font-family: var(--font-mono); font-size: 13px; line-height: 1.8; position: relative; overflow-x: auto; }
+.term::before { content: '● ● ●'; position: absolute; top: 12px; right: 18px; color: var(--text-faint); font-size: 10px; letter-spacing: 4px; }
+.term .prompt { color: var(--teal); user-select: none; }
+.term .cmd { color: var(--text); }
+.term .comment { color: var(--text-faint); }
+
+/* Personas */
+.persona { border-left: 2px solid var(--border); padding: 32px 32px; margin-bottom: 24px; background: var(--bg-elev); border-radius: 0 12px 12px 0; transition: border-left-color 0.2s; }
 .persona:hover { border-left-color: var(--coral); }
-.persona .role {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 8px;
-}
-.persona h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 24px;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  margin-bottom: 6px;
-  font-variation-settings: 'opsz' 48;
-}
-.persona .tag {
-  font-size: 14px;
-  color: var(--text-dim);
-  margin-bottom: 20px;
-}
-.persona .charter {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.85;
-  color: var(--text);
-  padding: 16px 20px;
-  background: var(--bg-deep);
-  border-left: 2px solid var(--coral);
-  border-radius: 0 6px 6px 0;
-  margin-bottom: 14px;
-  font-variation-settings: 'opsz' 24, 'SOFT' 60;
-}
-.persona .schedule {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  line-height: 1.9;
-}
+.persona .role-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+.persona h3 { font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: -0.01em; color: var(--text); margin-bottom: 6px; font-variation-settings: 'opsz' 48; }
+.persona .tag { font-size: 14px; color: var(--text-dim); margin-bottom: 20px; }
+.persona .charter { font-family: var(--font-display); font-style: italic; font-size: 16px; line-height: 1.85; color: var(--text); padding: 16px 20px; background: var(--bg-deep); border-left: 2px solid var(--coral); border-radius: 0 6px 6px 0; margin-bottom: 14px; font-variation-settings: 'opsz' 24, 'SOFT' 60; }
+.persona .schedule { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); line-height: 1.95; margin-bottom: 12px; }
 .persona .schedule .tag-time { color: var(--teal); }
+.persona .powered { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); padding-top: 12px; border-top: 1px dashed var(--border); }
+.persona .powered b { color: var(--text-dim); }
 
-.compare {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.compare th, .compare td {
-  padding: 14px 18px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-.compare tr:last-child th, .compare tr:last-child td { border-bottom: none; }
-.compare thead th {
-  background: var(--bg-deep);
-  color: var(--text-dim);
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-family: var(--font-mono);
-}
-.compare thead th:nth-child(2) {
-  color: var(--coral);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
-  text-transform: none;
-  letter-spacing: -0.01em;
-}
-.compare tbody th {
-  background: var(--bg-elev);
-  color: var(--text);
-  font-weight: 500;
-  width: 36%;
-}
-.compare tbody td { color: var(--text-dim); }
-.compare tbody td.col-us { color: var(--text); background: rgba(62, 197, 190, 0.04); }
-.compare tbody td .y { color: var(--teal); font-weight: 600; }
-.compare tbody td .n { color: var(--text-faint); }
-.compare tbody td .m { color: var(--gold); }
+/* Why */
+.why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.why-card { display: flex; gap: 18px; border: 1px solid var(--border); border-radius: 12px; padding: 24px 22px; background: var(--bg-elev); }
+.why-card .icon { font-family: var(--font-display); font-style: italic; font-weight: 600; font-size: 32px; color: var(--coral); line-height: 1; flex-shrink: 0; font-variation-settings: 'opsz' 48, 'WONK' 1; }
+.why-card h4 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: -0.005em; color: var(--text); margin-bottom: 6px; }
+.why-card p { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+.why-card p b { color: var(--text); font-weight: 500; }
 
-.install-cta { text-align: center; }
-.install-cta .term { margin: 0 auto 32px; text-align: left; }
+/* Install CTA */
+.install-cta .term { margin: 0 auto 32px; text-align: left; max-width: 640px; }
+.install-cta .cta-row { justify-content: center; }
 
-footer {
-  padding: 56px 0 64px;
-  border-top: 1px solid var(--border-soft);
-}
-footer .container {
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: 20px;
-}
+footer { padding: 56px 0 64px; border-top: 1px solid var(--border-soft); }
+footer .container { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
 footer .meta { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); }
 footer .meta a { color: var(--text-dim); }
-footer .built {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 13px;
-  color: var(--text-faint);
-  font-variation-settings: 'opsz' 18, 'WONK' 1;
-}
+footer .built { font-family: var(--font-display); font-style: italic; font-size: 13px; color: var(--text-faint); font-variation-settings: 'opsz' 18, 'WONK' 1; }
 
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .reveal.in { opacity: 1; transform: translateY(0); }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.hero .eyebrow   { animation: fadeUp 0.7s ease 0.05s both; }
-.hero .headline  { animation: fadeUp 0.8s ease 0.15s both; }
-.hero .subhead   { animation: fadeUp 0.8s ease 0.25s both; }
-.hero .term      { animation: fadeUp 0.8s ease 0.35s both; }
-.hero .cta-row   { animation: fadeUp 0.8s ease 0.45s both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.hero-text .eyebrow  { animation: fadeUp 0.7s ease 0.05s both; }
+.hero-text .headline { animation: fadeUp 0.8s ease 0.15s both; }
+.hero-text .subhead  { animation: fadeUp 0.8s ease 0.25s both; }
+.hero-text .cta-row  { animation: fadeUp 0.8s ease 0.35s both; }
+.hero-visual         { animation: fadeUp 0.9s ease 0.4s both; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01s !important;
-    transition-duration: 0.01s !important;
-  }
+  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
   .reveal { opacity: 1; transform: none; }
 }
 
-@media (max-width: 760px) {
-  .three-up { grid-template-columns: 1fr; }
-  nav.top .links { gap: 14px; font-size: 12px; }
-  .compare { font-size: 12px; }
-  .compare th, .compare td { padding: 10px 12px; }
+@media (max-width: 960px) {
+  .hero .container { grid-template-columns: 1fr; }
+  .hero-visual { margin-top: 48px; }
+  .skill-hero { grid-template-columns: 1fr; gap: 40px; }
+  .tool-buckets { grid-template-columns: 1fr; }
+  .what-grid { grid-template-columns: 1fr; }
+  .why-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  nav.top .links { gap: 12px; font-size: 12px; }
+  nav.top .links a:not(.lang-switch):nth-child(-n+3) { display: none; }
   .persona { padding: 24px 20px; }
+  .container { padding: 0 20px; }
 }
 </style>
 </head>
@@ -401,74 +265,194 @@ footer .built {
   <div class="container">
     <a href="#" class="logo">commando</a>
     <div class="links">
-      <a href="#what">是什么</a>
-      <a href="#how">长什么样</a>
-      <a href="#why">为什么</a>
+      <a href="#where">在哪里跑</a>
+      <a href="#what">他多了什么</a>
+      <a href="#skill">个性化 Skill</a>
       <a href="https://github.com/Frank-Pu/commando">GitHub ↗</a>
       <a href="index.html" class="lang-switch">EN</a>
     </div>
   </div>
 </nav>
 
+<!-- Hero -->
 <header class="hero">
   <div class="container">
-    <p class="eyebrow">Configuration framework · MIT · v0.1</p>
-    <h1 class="headline">用 25 分钟，<br/>配出一个<em>属于你自己的</em><br/>AI 数字搭档。</h1>
-    <p class="subhead">
-      花 25 分钟跟你的 AI 工具对话，它在你磁盘上产出 <strong>Charter（章程）+ Schedule（排班）+ Skills（技能）</strong>。
-      操作系统的定时器跑这些 Skill，输出推到你已经在用的飞书 / Notion / IM 里。<strong>数字搭档是你拥有的文件，不是租来的 SaaS。</strong>
-    </p>
-    <div class="term">
-<span class="comment"># 30 秒，任意终端</span><br/>
-<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando onboard</span>  <span class="comment"># 25 分钟对话 → ./my-agent/</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando go-live</span>  <span class="comment"># 接 IM + 装定时调度</span>
+    <div class="hero-text">
+      <p class="eyebrow">给已经在用 Claude Code / Cursor / Codex / Windsurf 的人</p>
+      <h1 class="headline">把你的 AI 工具雇成员工，<br/><em>不只是当聊天对象</em>。</h1>
+      <p class="subhead">
+        commando 装在<strong>你已经在用的 AI 工具旁边</strong>，让它变成一个真正的员工——有<strong>岗位说明书</strong>、有<strong>工作日历</strong>、有<strong>飞书/Notion 工位</strong>。
+        他早上 8 点准时上岗，干完一天的活，飞书弹卡片来找你。
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">立即开始 →</a>
+        <a class="btn btn-ghost" href="#where">怎么工作？</a>
+      </div>
     </div>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">立即开始 →</a>
-      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.zh-CN.md">查看文档</a>
+    <div class="hero-visual">
+      <div class="id-badge">
+        <div class="badge-head">
+          <span class="badge-role-label">增长合伙人</span>
+          <span class="badge-status">在岗</span>
+        </div>
+        <div class="badge-name">
+          阿土<span class="badge-name-en">Atu</span>
+        </div>
+        <p class="badge-tagline">"朴实、不端着、数据先行。<br/>对我的产品熟得跟联合创始人一样。"</p>
+        <hr class="badge-divider" />
+        <p class="badge-stack-label">驱动方</p>
+        <p class="badge-stack">Claude Code <span class="plus">+</span> commando</p>
+        <div class="badge-stats">
+          <span class="live">●</span> 今天跑完 4 个 task &nbsp;·&nbsp; <span class="review">1 个</span>等你审稿<br/>
+          <span style="color:var(--text-faint)">最近 30 天 · 87 份产物 · 12 份初稿被你采纳</span>
+        </div>
+      </div>
     </div>
   </div>
 </header>
 
-<section id="what" class="alt">
+<!-- Where it runs -->
+<section id="where" class="alt">
   <div class="container">
-    <p class="section-label reveal">commando 是什么</p>
-    <h2 class="section-title reveal">Configuration <em>归你所有</em>，我们让它可以分享。</h2>
+    <p class="section-label reveal">他在哪里跑</p>
+    <h2 class="section-title reveal">凡是你已经有 <em>AI agent</em> 的地方。</h2>
     <p class="section-lede reveal">
-      三个原语，没有 SaaS 绑定。数字搭档跑在你已经在用的任意 AI 工具上。
+      commando 不是一个新 AI 工具。它是一层，叠在你已经在用的任何 AI 工具上，让它从"聊天框"变成"真员工"。
     </p>
-    <div class="three-up">
-      <div class="cell reveal">
-        <p class="num">01 — Charter</p>
-        <h3>章程</h3>
-        <p>数字搭档的身份、风格、ICP、红线。每次调用自动注入。一份 markdown 文件躺在你的仓库里。</p>
+    <div class="tool-buckets">
+      <div class="bucket reveal">
+        <p class="bucket-num">1 — 装进 CLI agent</p>
+        <h3>你住在终端里</h3>
+        <p>commando 作为 CLI 工具装进系统。LLM 的活由你的 CLI agent 干，commando 给它配一份 Charter、一份 Schedule，和一组持久 Skill。</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">Claude Code</span>
+          <span class="tool-chip">Codex</span>
+          <span class="tool-chip">Kimi</span>
+          <span class="tool-chip">GLM</span>
+          <span class="tool-chip">Qwen</span>
+        </div>
       </div>
-      <div class="cell reveal">
-        <p class="num">02 — Skills</p>
-        <h3>离散任务</h3>
-        <p>写一篇笔记、复盘一场会议、扫一遍竞品。被 Schedule 触发或你 IM 召唤。每个 Skill = 一份 SKILL.md。</p>
+      <div class="bucket reveal">
+        <p class="bucket-num">2 — 配上你的 IDE</p>
+        <h3>你住在 IDE 里</h3>
+        <p>用任何 AI 加持的 IDE 打开仓库，commando 的 Onboarding skill 在 chat 面板里加载，25 分钟产出你的数字搭档。</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">Cursor</span>
+          <span class="tool-chip">Windsurf</span>
+          <span class="tool-chip">Trae</span>
+          <span class="tool-chip">VS Code Copilot</span>
+          <span class="tool-chip">JetBrains AI</span>
+        </div>
       </div>
-      <div class="cell reveal">
-        <p class="num">03 — Schedule</p>
-        <h3>排班调度</h3>
-        <p>自动翻译成 <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">launchd</code> /
-        <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">systemd</code>。操作系统跑你的搭档，不是我们。</p>
+      <div class="bucket reveal">
+        <p class="bucket-num">3 — 任何 CoWork 平台</p>
+        <h3>你和团队在一起</h3>
+        <p>任何有 base agent 在跑的平台都能用——包括国内外正在涌现的 cowork / devloop 平台。哪儿有 agent，commando 就叠在哪儿。</p>
+        <div class="bucket-tools">
+          <span class="tool-chip">CoWork</span>
+          <span class="tool-chip">Claude Desktop</span>
+          <span class="tool-chip">ChatGPT Desktop</span>
+          <span class="tool-chip dim">你自己的</span>
+        </div>
+      </div>
+    </div>
+    <p class="verdict reveal">
+      凡是有 base agent 在跑的地方，commando 都能把它变成一个<strong>专属的数字搭档</strong>——有真实的岗位、真实的记忆，和一张在你飞书 / Notion 工作空间里的真实工位。
+    </p>
+  </div>
+</section>
+
+<!-- What commando adds -->
+<section id="what">
+  <div class="container">
+    <p class="section-label reveal">他多了什么</p>
+    <h2 class="section-title reveal">一份岗位、一本日历、一段<em>记忆</em>。</h2>
+    <p class="section-lede reveal">
+      雇一个员工，三件事会发生：你告诉他岗位是什么、你把他排进日历、你给他一张存放工作的桌子。commando 给你的 AI 工具做的就是这三件事。
+    </p>
+    <div class="what-grid">
+      <div class="what-card reveal">
+        <p class="tag">01 · 岗位说明书</p>
+        <h3>他<em>记得自己是谁</em></h3>
+        <p>
+          仓库里一份 markdown 写明这位搭档的岗位——服务什么产品、为谁工作、说话什么风格、什么红线不能碰。每次对话自动注入。他不会"忘记"。
+        </p>
+        <p class="tech">文件：<b>charter.md</b> · 每次调用自动注入</p>
+      </div>
+      <div class="what-card reveal">
+        <p class="tag">02 · 一天的活</p>
+        <h3>他干<em>很多种</em>事</h3>
+        <p>
+          不是一项技能——很多项。写笔记、复盘会议、扫竞品、整理用户反馈。像真员工一样，岗位上该干什么他就能干。你也可以随时给他派新活。
+        </p>
+        <p class="tech">文件：<b>skills/*.md</b> · 引入 / 定制 / 生成</p>
+      </div>
+      <div class="what-card reveal">
+        <p class="tag">03 · 工作日历</p>
+        <h3>他早上 <em>8 点</em>上岗</h3>
+        <p>
+          排班表写"早 8 点晨间简报，11 点稿件审核，周日 7 点周复盘"。操作系统调度器跑这张表——他自己干活，结果推到你飞书 / Notion。你不用记着要打开 ChatGPT。
+        </p>
+        <p class="tech">文件：<b>schedule.yaml</b> · launchd / systemd / cron</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="how">
+<!-- Skill personalization -->
+<section id="skill" class="alt">
   <div class="container">
-    <p class="section-label reveal">三个真实的 Configuration</p>
-    <h2 class="section-title reveal">数字搭档<em>到底</em>长什么样？</h2>
+    <p class="section-label reveal">为什么他的 Skill 不一样</p>
+    <h2 class="section-title reveal">通用 Skill 不懂<em>你的业务</em>。他的懂。</h2>
     <p class="section-lede reveal">
-      三份不同领域的 Charter 节选，展示这个工具的覆盖范围。每个 Charter 就是几百行 markdown，定义了这个搭档是谁。
+      市面上 AI 工具的 Skill 大多是通用模板——"做一份 PPT"、"写一段代码"、"分析这份数据"。对谁都能用，对谁都不够好。commando 让你的搭档拥有真正懂你产品、你用户、你红线的 Skill。
+    </p>
+    <div class="skill-hero">
+      <div class="skill-left reveal">
+        <p>"我的增长合伙人不写通用小红书帖。他用<em>我的</em>语气，写给<em>我的</em>ICP，套<em>我的</em>双语 bridge 公式。"</p>
+        <p>他获得贴身 Skill 的三条路径：</p>
+        <p><b style="color:var(--text)">1. Onboarding 自动生成。</b>25 分钟对话产出贴你产品、用户、渠道的专属 Skill。</p>
+        <p><b style="color:var(--text)">2. 从社区一键引入。</b>看到别人发的好 Skill？一个命令拉进来。</p>
+        <p><b style="color:var(--text)">3. 自动按你的 Charter rebuild。</b>引入的 Skill 不会留在 generic 模板状态——commando 会按你的 Charter 重写它的 prompt，让它说你的话、守你的红线。</p>
+      </div>
+      <div class="skill-steps reveal">
+        <div class="skill-step">
+          <div class="num">01</div>
+          <div>
+            <h4>Onboarding 产出定制 Skill</h4>
+            <p>25 分钟对话 → <code>skills/xhs-bilingual-bridge/</code> 已经知道你的 ICP 是"备考 IELTS 的中国大学生"。</p>
+          </div>
+        </div>
+        <div class="skill-step">
+          <div class="num">02</div>
+          <div>
+            <h4>引入一个社区 Skill</h4>
+            <p><code>commando install @commando/competitive-watch</code> — 从 Registry 拉一个通用的竞品扫描 Skill 进来。</p>
+          </div>
+        </div>
+        <div class="skill-step">
+          <div class="num">03</div>
+          <div>
+            <h4>按你的 Charter 自动 rebuild</h4>
+            <p>commando 重写这个 Skill 的 prompt body。现在 competitive-watch 知道你的 ICP、你的红线、要追哪几家竞品。说你的话。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Personas -->
+<section>
+  <div class="container">
+    <p class="section-label reveal">三个真实的数字搭档</p>
+    <h2 class="section-title reveal">一份"雇佣关系"<em>到底</em>长什么样？</h2>
+    <p class="section-lede reveal">
+      下面三份是真实 Charter 节选。每份需要 25 分钟 Onboarding 产出。每份都是你已经在用的 AI 工具，被 commando 配置成了一个特定岗位。
     </p>
 
     <div class="persona reveal">
-      <p class="role">角色 · 增长合伙人</p>
+      <p class="role-tag">岗位 · 增长合伙人</p>
       <h3>独立产品创作者的内容 + 用户洞察搭档</h3>
       <p class="tag">已经为 <a href="https://lemingle.com" style="color:var(--text-dim);text-decoration:underline;">LeMingle</a> 持续服务 6+ 个月——本仓库的标准参考 Configuration。</p>
       <div class="charter">
@@ -481,12 +465,13 @@ footer .built {
         <span class="tag-time">weekly_data_review</span> 周五 16:00 &nbsp;·&nbsp;
         <span class="tag-time">weekly_reflection</span> 周日 19:00
       </div>
+      <p class="powered">驱动方 <b>Claude Code + commando</b> · 工件落在 <b>飞书多维表格</b></p>
     </div>
 
     <div class="persona reveal">
-      <p class="role">角色 · 理财顾问</p>
+      <p class="role-tag">岗位 · 理财顾问</p>
       <h3>始终在线的账户守望者</h3>
-      <p class="tag">展示强红线机制如何让数字搭档比通用 AI 助手更安全。</p>
+      <p class="tag">展示强红线机制如何让搭档比通用 AI 助手更安全。</p>
       <div class="charter">
         "我是你的私人理财顾问。红线：绝不替你做任何交易；绝不预测市场；<br/>
         绝不推荐高风险产品；季度报告必须包含一节'我可能错在哪'。"
@@ -496,112 +481,89 @@ footer .built {
         <span class="tag-time">monthly_tax_check</span> 每月 1 日 09:00 &nbsp;·&nbsp;
         <span class="tag-time">quarterly_rebalance_review</span> 每季度末
       </div>
+      <p class="powered">驱动方 <b>Codex + commando</b> · 工件落在 <b>Notion 数据库</b></p>
     </div>
 
     <div class="persona reveal">
-      <p class="role">角色 · 求职陪跑导师</p>
+      <p class="role-tag">岗位 · 求职陪跑导师</p>
       <h3>跳槽 3 个月的高强度陪练</h3>
-      <p class="tag">演示有时限的陪伴关系——Charter 里写明的"失败标准"。</p>
+      <p class="tag">演示有时限的雇佣关系——Charter 里写明的"失败标准"。</p>
       <div class="charter">
         "我是你的跳槽教练。风格：温和但不放水。红线：绝不帮你写虚假履历；<br/>
         绝不替你回避真实弱点；3 个月内毫无进展我会直接告诉你。"
       </div>
       <div class="schedule">
         <span class="tag-time">daily_listing_scan</span> 每天 09:00 &nbsp;·&nbsp;
-        <span class="tag-time">interview_debrief</span> 手动触发 &nbsp;·&nbsp;
+        <span class="tag-time">interview_debrief</span> 随时触发 &nbsp;·&nbsp;
         <span class="tag-time">weekly_pacing_check</span> 周日 19:00
+      </div>
+      <p class="powered">驱动方 <b>Cursor + commando</b> · 工件落在 <b>Obsidian 知识库</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- Why commando -->
+<section id="why" class="alt">
+  <div class="container">
+    <p class="section-label reveal">为什么用 commando</p>
+    <h2 class="section-title reveal">加强你<em>已经在付费</em>的 AI 工具。</h2>
+    <p class="section-lede reveal">
+      你已经在为 Claude $20/月、Cursor $20/月 付费。commando 不替代它们——而是让它们不再每次清空记忆、能按时上岗、真的接进你的工作空间。
+    </p>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <span class="icon">①</span>
+        <div>
+          <h4>跨 session 的持续记忆</h4>
+          <p>Charter + Semantic memory 落在磁盘上。搭档记得你的产品、用户、上季度的反思。<b>你随时从 Cursor 换到 Claude Code</b>——记忆都跟你走。</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">②</span>
+        <div>
+          <h4>住在你工作空间里，不是 chat tab 里</h4>
+          <p>工件落在<b>飞书多维表格、Notion 数据库、Obsidian 知识库</b>——团队已经在用的地方。审稿卡片推到你 IM。你不用记着要打开 ChatGPT。</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">③</span>
+        <div>
+          <h4>懂你产品的 Skill</h4>
+          <p>Onboarding 产出贴你业务的 Skill。从社区引入的 Skill<b>自动按你的 Charter rebuild</b>。不再是"写一篇小红书"这种通用模板。</p>
+        </div>
+      </div>
+      <div class="why-card reveal">
+        <span class="icon">④</span>
+        <div>
+          <h4>早上 8 点自己上岗</h4>
+          <p>操作系统调度器——launchd、systemd、cron——跑你的搭档。晨间简报、周末复盘、月度税务检查。<b>不需要 SaaS 守护进程，不订阅云服务。</b></p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="why" class="alt">
-  <div class="container">
-    <p class="section-label reveal">为什么用 commando</p>
-    <h2 class="section-title reveal">归你所有，<em>不是租来的</em>。</h2>
-    <p class="section-lede reveal">
-      Runtime 是商品，Configuration 是护城河。我们故意不卷 Runtime——把全部精力放在让 Configuration 可分享、可版本化、归你所有。
-    </p>
-    <div class="reveal">
-    <table class="compare">
-      <thead>
-        <tr>
-          <th></th>
-          <th>commando</th>
-          <th>ChatGPT / GPTs</th>
-          <th>LangChain</th>
-          <th>Zapier + LLM</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>归你所有</th>
-          <td class="col-us"><span class="y">✓</span> 文件在你仓库里</td>
-          <td><span class="n">✗</span> 锁在 OpenAI</td>
-          <td><span class="y">✓</span> 代码在你仓库</td>
-          <td><span class="n">✗</span> 锁在 Zapier</td>
-        </tr>
-        <tr>
-          <th>自由选 LLM</th>
-          <td class="col-us"><span class="y">✓</span> Claude / GLM / Kimi / 任意</td>
-          <td><span class="n">✗</span> 只能 OpenAI</td>
-          <td><span class="m">⚠</span> 每换一家都改代码</td>
-          <td><span class="m">⚠</span> 只能用它的集成</td>
-        </tr>
-        <tr>
-          <th>用系统定时器</th>
-          <td class="col-us"><span class="y">✓</span> launchd / systemd</td>
-          <td><span class="n">✗</span></td>
-          <td><span class="m">⚠</span> 自己写</td>
-          <td><span class="y">✓</span> 用它的 cron</td>
-        </tr>
-        <tr>
-          <th>输出到你的工具</th>
-          <td class="col-us"><span class="y">✓</span> 飞书 / Notion / IM</td>
-          <td><span class="n">✗</span> 只在 ChatGPT 里</td>
-          <td><span class="m">⚠</span> 自己接</td>
-          <td><span class="y">✓</span> 用它的集成</td>
-        </tr>
-        <tr>
-          <th>长期记忆可读可改</th>
-          <td class="col-us"><span class="y">✓</span> 磁盘上的 markdown</td>
-          <td><span class="m">⚠</span> 藏在 context 里</td>
-          <td><span class="m">⚠</span> 自己接向量库</td>
-          <td><span class="n">✗</span> 没有记忆</td>
-        </tr>
-        <tr>
-          <th>有引导上手</th>
-          <td class="col-us"><span class="y">✓</span> 25 分钟对话</td>
-          <td><span class="n">✗</span> 自己想</td>
-          <td><span class="n">✗</span> 自己想</td>
-          <td><span class="n">✗</span> 自己想</td>
-        </tr>
-      </tbody>
-    </table>
-    </div>
-  </div>
-</section>
-
-<section class="install-cta">
+<!-- Final CTA -->
+<section class="install-cta section-centered">
   <div class="container">
     <p class="section-label reveal">开始使用</p>
-    <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;max-width:24ch;">你的数字搭档<em>明早就上岗</em>。</h2>
-    <p class="section-lede reveal" style="margin-left:auto;margin-right:auto;text-align:center;">
-      装好、onboard、go-live。第二天早上 8 点，搭档跑第一个任务，飞书弹卡片找你。
+    <h2 class="section-title reveal">明早 <em>8 点</em>，你的搭档上岗。</h2>
+    <p class="section-lede reveal">
+      30 秒装好。25 分钟 Onboarding。第 1 天：早上 8 点准时上岗，跑完一天 Schedule，飞书弹卡片找你。
     </p>
     <div class="reveal">
     <div class="term">
-<span class="comment"># step 1 · 安装（30 秒）</span><br/>
+<span class="comment"># step 1 · 安装（30 秒，任意终端）</span><br/>
 <span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
 <br/>
-<span class="comment"># step 2 · 25 分钟对话 → 产出 ./my-agent/</span><br/>
-<span class="prompt">$</span> <span class="cmd">commando onboard</span><br/>
+<span class="comment"># step 2 · 25 分钟 Onboarding，在你的 Claude Code / Cursor / Codex / ... 里跑</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span>          <span class="comment"># 产出 ./my-agent/</span><br/>
 <br/>
-<span class="comment"># step 3 · 填好 Skill body + 接 IM + 装定时调度</span><br/>
+<span class="comment"># step 3 · 个性化 Skill + 接 IM + 装定时调度</span><br/>
 <span class="prompt">$</span> <span class="cmd">commando build-skills</span><br/>
 <span class="prompt">$</span> <span class="cmd">commando go-live</span>
     </div>
-    <div class="cta-row" style="justify-content:center;">
+    <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">GitHub 查看 →</a>
       <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.zh-CN.md">查看文档</a>
     </div>
@@ -615,7 +577,7 @@ footer .built {
       MIT · 作者 <a href="https://github.com/Frank-Pu">Frank PU</a> ·
       <a href="https://github.com/Frank-Pu/commando">github.com/Frank-Pu/commando</a>
     </p>
-    <p class="built">Runtime is commodity. Configuration is the moat.</p>
+    <p class="built">加强你已经在用的。</p>
   </div>
 </footer>
 
