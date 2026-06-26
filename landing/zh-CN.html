@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>commando — 配出一个属于你自己的 AI 数字搭档</title>
+<meta name="description" content="用 25 分钟，配出一个属于你自己的 AI 数字搭档。文件归你所有，跑在你已经在用的 AI 工具上。" />
+<meta property="og:title" content="commando — 25 分钟配出 AI 数字搭档" />
+<meta property="og:description" content="25 分钟对话产出 Charter / Schedule / Skills 文件，跑在你选的 LLM 上。" />
+<meta name="theme-color" content="#0d1817" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,30,0..1&family=IBM+Plex+Sans:wght@300;400;500;600&family=Noto+Serif+SC:wght@500;600;700&family=Noto+Sans+SC:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:           #0d1817;
+  --bg-elev:      #162424;
+  --bg-deep:      #0a1414;
+  --border:       #1f3c3a;
+  --border-soft:  #142220;
+  --text:         #f0eadc;
+  --text-dim:     #8aa2a0;
+  --text-faint:   #5a6f6d;
+  --teal:         #3ec5be;
+  --teal-deep:    #1f6b6b;
+  --coral:        #ff7a6b;
+  --coral-deep:   #e3503e;
+  --gold:         #d9b46a;
+  --font-display: 'Fraunces', 'Noto Serif SC', Georgia, serif;
+  --font-sans:    'IBM Plex Sans', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  --container:    1080px;
+  --section-pad:  clamp(72px, 10vw, 128px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(62, 197, 190, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(62, 197, 190, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index: 0;
+}
+
+a { color: var(--teal); text-decoration: none; transition: color 0.15s; }
+a:hover { color: var(--coral); }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 24px; position: relative; }
+
+nav.top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  background: rgba(13, 24, 23, 0.75);
+  border-bottom: 1px solid var(--border-soft);
+}
+nav.top .container {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 16px; padding-bottom: 16px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variation-settings: 'opsz' 144;
+}
+.logo::before {
+  content: '·';
+  color: var(--coral);
+  margin-right: 4px;
+  font-size: 30px;
+  line-height: 0;
+  vertical-align: middle;
+}
+nav.top .links {
+  display: flex; gap: 24px; align-items: center;
+  font-size: 13px; font-weight: 500;
+}
+nav.top .links a { color: var(--text-dim); }
+nav.top .links a:hover { color: var(--text); }
+.lang-switch {
+  border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 12px;
+}
+
+.hero {
+  padding: clamp(72px, 12vh, 140px) 0 var(--section-pad);
+  position: relative;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 24px;
+}
+.eyebrow::before {
+  content: '── ';
+  color: var(--teal-deep);
+}
+h1.headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 6vw, 72px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 28px;
+  font-variation-settings: 'opsz' 144;
+}
+h1.headline em {
+  font-style: italic;
+  color: var(--coral);
+  font-weight: 600;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 1;
+}
+.subhead {
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.75;
+  color: var(--text-dim);
+  max-width: 56ch;
+  margin-bottom: 40px;
+}
+.subhead strong { color: var(--text); font-weight: 500; }
+
+.term {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 32px;
+  max-width: 640px;
+  position: relative;
+  overflow-x: auto;
+}
+.term::before {
+  content: '● ● ●';
+  position: absolute; top: 12px; right: 18px;
+  color: var(--text-faint);
+  font-size: 10px; letter-spacing: 4px;
+}
+.term .prompt { color: var(--teal); user-select: none; }
+.term .cmd    { color: var(--text); }
+.term .comment{ color: var(--text-faint); }
+
+.cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 26px;
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+}
+.btn-primary { background: var(--coral); color: var(--bg-deep); font-weight: 600; }
+.btn-primary:hover { background: var(--coral-deep); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-ghost:hover { background: var(--bg-elev); border-color: var(--teal); }
+
+section { padding: var(--section-pad) 0; position: relative; }
+section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.section-label::before { content: '§ '; color: var(--text-faint); }
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 18px;
+  max-width: 24ch;
+  font-variation-settings: 'opsz' 96;
+}
+.section-title em { font-style: italic; color: var(--gold); font-weight: 600; }
+.section-lede {
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--text-dim);
+  max-width: 60ch;
+  margin-bottom: 48px;
+}
+
+.three-up {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.cell {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 24px;
+  background: var(--bg-elev);
+}
+.cell .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teal);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.cell h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.005em;
+  margin-bottom: 12px;
+  color: var(--text);
+  font-variation-settings: 'opsz' 36;
+}
+.cell p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.75;
+}
+
+.persona {
+  border-left: 2px solid var(--border);
+  padding: 32px 32px;
+  margin-bottom: 28px;
+  background: var(--bg-elev);
+  border-radius: 0 10px 10px 0;
+  transition: border-left-color 0.2s;
+}
+.persona:hover { border-left-color: var(--coral); }
+.persona .role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.persona h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-variation-settings: 'opsz' 48;
+}
+.persona .tag {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.persona .charter {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--text);
+  padding: 16px 20px;
+  background: var(--bg-deep);
+  border-left: 2px solid var(--coral);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 14px;
+  font-variation-settings: 'opsz' 24, 'SOFT' 60;
+}
+.persona .schedule {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.9;
+}
+.persona .schedule .tag-time { color: var(--teal); }
+
+.compare {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.compare th, .compare td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.compare tr:last-child th, .compare tr:last-child td { border-bottom: none; }
+.compare thead th {
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.compare thead th:nth-child(2) {
+  color: var(--coral);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+.compare tbody th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 500;
+  width: 36%;
+}
+.compare tbody td { color: var(--text-dim); }
+.compare tbody td.col-us { color: var(--text); background: rgba(62, 197, 190, 0.04); }
+.compare tbody td .y { color: var(--teal); font-weight: 600; }
+.compare tbody td .n { color: var(--text-faint); }
+.compare tbody td .m { color: var(--gold); }
+
+.install-cta { text-align: center; }
+.install-cta .term { margin: 0 auto 32px; text-align: left; }
+
+footer {
+  padding: 56px 0 64px;
+  border-top: 1px solid var(--border-soft);
+}
+footer .container {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+footer .meta { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); }
+footer .meta a { color: var(--text-dim); }
+footer .built {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-faint);
+  font-variation-settings: 'opsz' 18, 'WONK' 1;
+}
+
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero .eyebrow   { animation: fadeUp 0.7s ease 0.05s both; }
+.hero .headline  { animation: fadeUp 0.8s ease 0.15s both; }
+.hero .subhead   { animation: fadeUp 0.8s ease 0.25s both; }
+.hero .term      { animation: fadeUp 0.8s ease 0.35s both; }
+.hero .cta-row   { animation: fadeUp 0.8s ease 0.45s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01s !important;
+    transition-duration: 0.01s !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) {
+  .three-up { grid-template-columns: 1fr; }
+  nav.top .links { gap: 14px; font-size: 12px; }
+  .compare { font-size: 12px; }
+  .compare th, .compare td { padding: 10px 12px; }
+  .persona { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="container">
+    <a href="#" class="logo">commando</a>
+    <div class="links">
+      <a href="#what">是什么</a>
+      <a href="#how">长什么样</a>
+      <a href="#why">为什么</a>
+      <a href="https://github.com/Frank-Pu/commando">GitHub ↗</a>
+      <a href="index.html" class="lang-switch">EN</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <p class="eyebrow">Configuration framework · MIT · v0.1</p>
+    <h1 class="headline">用 25 分钟，<br/>配出一个<em>属于你自己的</em><br/>AI 数字搭档。</h1>
+    <p class="subhead">
+      花 25 分钟跟你的 AI 工具对话，它在你磁盘上产出 <strong>Charter（章程）+ Schedule（排班）+ Skills（技能）</strong>。
+      操作系统的定时器跑这些 Skill，输出推到你已经在用的飞书 / Notion / IM 里。<strong>数字搭档是你拥有的文件，不是租来的 SaaS。</strong>
+    </p>
+    <div class="term">
+<span class="comment"># 30 秒，任意终端</span><br/>
+<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span>  <span class="comment"># 25 分钟对话 → ./my-agent/</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando go-live</span>  <span class="comment"># 接 IM + 装定时调度</span>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">立即开始 →</a>
+      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.zh-CN.md">查看文档</a>
+    </div>
+  </div>
+</header>
+
+<section id="what" class="alt">
+  <div class="container">
+    <p class="section-label reveal">commando 是什么</p>
+    <h2 class="section-title reveal">Configuration <em>归你所有</em>，我们让它可以分享。</h2>
+    <p class="section-lede reveal">
+      三个原语，没有 SaaS 绑定。数字搭档跑在你已经在用的任意 AI 工具上。
+    </p>
+    <div class="three-up">
+      <div class="cell reveal">
+        <p class="num">01 — Charter</p>
+        <h3>章程</h3>
+        <p>数字搭档的身份、风格、ICP、红线。每次调用自动注入。一份 markdown 文件躺在你的仓库里。</p>
+      </div>
+      <div class="cell reveal">
+        <p class="num">02 — Skills</p>
+        <h3>离散任务</h3>
+        <p>写一篇笔记、复盘一场会议、扫一遍竞品。被 Schedule 触发或你 IM 召唤。每个 Skill = 一份 SKILL.md。</p>
+      </div>
+      <div class="cell reveal">
+        <p class="num">03 — Schedule</p>
+        <h3>排班调度</h3>
+        <p>自动翻译成 <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">launchd</code> /
+        <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">systemd</code>。操作系统跑你的搭档，不是我们。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="container">
+    <p class="section-label reveal">三个真实的 Configuration</p>
+    <h2 class="section-title reveal">数字搭档<em>到底</em>长什么样？</h2>
+    <p class="section-lede reveal">
+      三份不同领域的 Charter 节选，展示这个工具的覆盖范围。每个 Charter 就是几百行 markdown，定义了这个搭档是谁。
+    </p>
+
+    <div class="persona reveal">
+      <p class="role">角色 · 增长合伙人</p>
+      <h3>独立产品创作者的内容 + 用户洞察搭档</h3>
+      <p class="tag">已经为 <a href="https://lemingle.com" style="color:var(--text-dim);text-decoration:underline;">LeMingle</a> 持续服务 6+ 个月——本仓库的标准参考 Configuration。</p>
+      <div class="charter">
+        "我是 [产品名] 的增长合伙人。风格：朴实、数据先行、不端着、绝不用营销腔。<br/>
+        红线：AIGC 手改率 ≥ 20%、小红书外链零容忍、营销密度 ≤ 20%。"
+      </div>
+      <div class="schedule">
+        <span class="tag-time">morning_sense</span> 每天 08:00 &nbsp;·&nbsp;
+        <span class="tag-time">xhs_draft</span> 周二/五 11:00 &nbsp;·&nbsp;
+        <span class="tag-time">weekly_data_review</span> 周五 16:00 &nbsp;·&nbsp;
+        <span class="tag-time">weekly_reflection</span> 周日 19:00
+      </div>
+    </div>
+
+    <div class="persona reveal">
+      <p class="role">角色 · 理财顾问</p>
+      <h3>始终在线的账户守望者</h3>
+      <p class="tag">展示强红线机制如何让数字搭档比通用 AI 助手更安全。</p>
+      <div class="charter">
+        "我是你的私人理财顾问。红线：绝不替你做任何交易；绝不预测市场；<br/>
+        绝不推荐高风险产品；季度报告必须包含一节'我可能错在哪'。"
+      </div>
+      <div class="schedule">
+        <span class="tag-time">daily_portfolio_health</span> 每天 07:00 &nbsp;·&nbsp;
+        <span class="tag-time">monthly_tax_check</span> 每月 1 日 09:00 &nbsp;·&nbsp;
+        <span class="tag-time">quarterly_rebalance_review</span> 每季度末
+      </div>
+    </div>
+
+    <div class="persona reveal">
+      <p class="role">角色 · 求职陪跑导师</p>
+      <h3>跳槽 3 个月的高强度陪练</h3>
+      <p class="tag">演示有时限的陪伴关系——Charter 里写明的"失败标准"。</p>
+      <div class="charter">
+        "我是你的跳槽教练。风格：温和但不放水。红线：绝不帮你写虚假履历；<br/>
+        绝不替你回避真实弱点；3 个月内毫无进展我会直接告诉你。"
+      </div>
+      <div class="schedule">
+        <span class="tag-time">daily_listing_scan</span> 每天 09:00 &nbsp;·&nbsp;
+        <span class="tag-time">interview_debrief</span> 手动触发 &nbsp;·&nbsp;
+        <span class="tag-time">weekly_pacing_check</span> 周日 19:00
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why" class="alt">
+  <div class="container">
+    <p class="section-label reveal">为什么用 commando</p>
+    <h2 class="section-title reveal">归你所有，<em>不是租来的</em>。</h2>
+    <p class="section-lede reveal">
+      Runtime 是商品，Configuration 是护城河。我们故意不卷 Runtime——把全部精力放在让 Configuration 可分享、可版本化、归你所有。
+    </p>
+    <div class="reveal">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>commando</th>
+          <th>ChatGPT / GPTs</th>
+          <th>LangChain</th>
+          <th>Zapier + LLM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>归你所有</th>
+          <td class="col-us"><span class="y">✓</span> 文件在你仓库里</td>
+          <td><span class="n">✗</span> 锁在 OpenAI</td>
+          <td><span class="y">✓</span> 代码在你仓库</td>
+          <td><span class="n">✗</span> 锁在 Zapier</td>
+        </tr>
+        <tr>
+          <th>自由选 LLM</th>
+          <td class="col-us"><span class="y">✓</span> Claude / GLM / Kimi / 任意</td>
+          <td><span class="n">✗</span> 只能 OpenAI</td>
+          <td><span class="m">⚠</span> 每换一家都改代码</td>
+          <td><span class="m">⚠</span> 只能用它的集成</td>
+        </tr>
+        <tr>
+          <th>用系统定时器</th>
+          <td class="col-us"><span class="y">✓</span> launchd / systemd</td>
+          <td><span class="n">✗</span></td>
+          <td><span class="m">⚠</span> 自己写</td>
+          <td><span class="y">✓</span> 用它的 cron</td>
+        </tr>
+        <tr>
+          <th>输出到你的工具</th>
+          <td class="col-us"><span class="y">✓</span> 飞书 / Notion / IM</td>
+          <td><span class="n">✗</span> 只在 ChatGPT 里</td>
+          <td><span class="m">⚠</span> 自己接</td>
+          <td><span class="y">✓</span> 用它的集成</td>
+        </tr>
+        <tr>
+          <th>长期记忆可读可改</th>
+          <td class="col-us"><span class="y">✓</span> 磁盘上的 markdown</td>
+          <td><span class="m">⚠</span> 藏在 context 里</td>
+          <td><span class="m">⚠</span> 自己接向量库</td>
+          <td><span class="n">✗</span> 没有记忆</td>
+        </tr>
+        <tr>
+          <th>有引导上手</th>
+          <td class="col-us"><span class="y">✓</span> 25 分钟对话</td>
+          <td><span class="n">✗</span> 自己想</td>
+          <td><span class="n">✗</span> 自己想</td>
+          <td><span class="n">✗</span> 自己想</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section class="install-cta">
+  <div class="container">
+    <p class="section-label reveal">开始使用</p>
+    <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;max-width:24ch;">你的数字搭档<em>明早就上岗</em>。</h2>
+    <p class="section-lede reveal" style="margin-left:auto;margin-right:auto;text-align:center;">
+      装好、onboard、go-live。第二天早上 8 点，搭档跑第一个任务，飞书弹卡片找你。
+    </p>
+    <div class="reveal">
+    <div class="term">
+<span class="comment"># step 1 · 安装（30 秒）</span><br/>
+<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
+<br/>
+<span class="comment"># step 2 · 25 分钟对话 → 产出 ./my-agent/</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span><br/>
+<br/>
+<span class="comment"># step 3 · 填好 Skill body + 接 IM + 装定时调度</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando build-skills</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando go-live</span>
+    </div>
+    <div class="cta-row" style="justify-content:center;">
+      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">GitHub 查看 →</a>
+      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.zh-CN.md">查看文档</a>
+    </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p class="meta">
+      MIT · 作者 <a href="https://github.com/Frank-Pu">Frank PU</a> ·
+      <a href="https://github.com/Frank-Pu/commando">github.com/Frank-Pu/commando</a>
+    </p>
+    <p class="built">Runtime is commodity. Configuration is the moat.</p>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>

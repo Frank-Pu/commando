@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>commando — Configure your AI digital partner</title>
+<meta name="description" content="Configure your own AI digital partner in 25 minutes. Files you own, runs on whatever AI tool you already use." />
+<meta property="og:title" content="commando — Configure your AI digital partner" />
+<meta property="og:description" content="25-minute conversation produces a Charter, a Schedule, and a set of Skills you own as files. Runs on your choice of LLM." />
+<meta name="theme-color" content="#0d1817" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,30,0..1&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --bg:           #0d1817;
+  --bg-elev:      #162424;
+  --bg-deep:      #0a1414;
+  --border:       #1f3c3a;
+  --border-soft:  #142220;
+  --text:         #f0eadc;
+  --text-dim:     #8aa2a0;
+  --text-faint:   #5a6f6d;
+  --teal:         #3ec5be;
+  --teal-deep:    #1f6b6b;
+  --coral:        #ff7a6b;
+  --coral-deep:   #e3503e;
+  --gold:         #d9b46a;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans:    'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  --container:    1080px;
+  --section-pad:  clamp(72px, 10vw, 128px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Background texture — subtle grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(62, 197, 190, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(62, 197, 190, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index: 0;
+}
+
+a { color: var(--teal); text-decoration: none; transition: color 0.15s; }
+a:hover { color: var(--coral); }
+
+.container { max-width: var(--container); margin: 0 auto; padding: 0 24px; position: relative; }
+
+/* ─────────── Nav ─────────── */
+nav.top {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  background: rgba(13, 24, 23, 0.75);
+  border-bottom: 1px solid var(--border-soft);
+}
+nav.top .container {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 16px; padding-bottom: 16px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variation-settings: 'opsz' 144;
+}
+.logo::before {
+  content: '·';
+  color: var(--coral);
+  margin-right: 4px;
+  font-size: 30px;
+  line-height: 0;
+  vertical-align: middle;
+}
+nav.top .links {
+  display: flex; gap: 24px; align-items: center;
+  font-size: 13px; font-weight: 500;
+}
+nav.top .links a { color: var(--text-dim); }
+nav.top .links a:hover { color: var(--text); }
+.lang-switch {
+  border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 12px;
+}
+
+/* ─────────── Hero ─────────── */
+.hero {
+  padding: clamp(72px, 12vh, 140px) 0 var(--section-pad);
+  position: relative;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 24px;
+}
+.eyebrow::before {
+  content: '── ';
+  color: var(--teal-deep);
+}
+h1.headline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(40px, 6.5vw, 80px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin-bottom: 28px;
+  font-variation-settings: 'opsz' 144, 'SOFT' 20;
+  max-width: 18ch;
+}
+h1.headline em {
+  font-style: italic;
+  color: var(--coral);
+  font-weight: 500;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30, 'WONK' 1;
+}
+.subhead {
+  font-size: clamp(16px, 1.6vw, 20px);
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-width: 56ch;
+  margin-bottom: 40px;
+}
+.subhead strong { color: var(--text); font-weight: 500; }
+
+.term {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.8;
+  margin-bottom: 32px;
+  max-width: 640px;
+  position: relative;
+  overflow-x: auto;
+}
+.term::before {
+  content: '● ● ●';
+  position: absolute; top: 12px; right: 18px;
+  color: var(--text-faint);
+  font-size: 10px; letter-spacing: 4px;
+}
+.term .prompt { color: var(--teal); user-select: none; }
+.term .cmd    { color: var(--text); }
+.term .comment{ color: var(--text-faint); }
+
+.cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 26px;
+  font-family: var(--font-sans);
+  font-size: 14px; font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s;
+  letter-spacing: 0.01em;
+}
+.btn-primary {
+  background: var(--coral);
+  color: var(--bg-deep);
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--coral-deep); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-elev); border-color: var(--teal); }
+
+/* ─────────── Sections ─────────── */
+section { padding: var(--section-pad) 0; position: relative; }
+section.alt { background: var(--bg-deep); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.section-label::before { content: '§ '; color: var(--text-faint); }
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 18px;
+  max-width: 22ch;
+  font-variation-settings: 'opsz' 96;
+}
+.section-title em { font-style: italic; color: var(--gold); font-weight: 500; }
+.section-lede {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  max-width: 60ch;
+  margin-bottom: 48px;
+}
+
+/* ─────────── 3-up grid (What it does) ─────────── */
+.three-up {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.cell {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 24px;
+  background: var(--bg-elev);
+}
+.cell .num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--teal);
+  margin-bottom: 12px;
+  letter-spacing: 0.1em;
+}
+.cell h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+  color: var(--text);
+  font-variation-settings: 'opsz' 36;
+}
+.cell p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ─────────── Personas ─────────── */
+.persona {
+  border-left: 2px solid var(--border);
+  padding: 32px 32px;
+  margin-bottom: 28px;
+  background: var(--bg-elev);
+  border-radius: 0 10px 10px 0;
+  transition: border-left-color 0.2s;
+}
+.persona:hover { border-left-color: var(--coral); }
+.persona .role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.persona h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin-bottom: 6px;
+  font-variation-settings: 'opsz' 48;
+}
+.persona .tag {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+.persona .charter {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  padding: 16px 20px;
+  background: var(--bg-deep);
+  border-left: 2px solid var(--coral);
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 14px;
+  font-variation-settings: 'opsz' 24, 'SOFT' 60;
+}
+.persona .schedule {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.8;
+}
+.persona .schedule .tag-time { color: var(--teal); }
+
+/* ─────────── Comparison ─────────── */
+.compare {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.compare th, .compare td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+}
+.compare tr:last-child th, .compare tr:last-child td { border-bottom: none; }
+.compare thead th {
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+.compare thead th:nth-child(2) {
+  color: var(--coral);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+.compare tbody th {
+  background: var(--bg-elev);
+  color: var(--text);
+  font-weight: 500;
+  width: 36%;
+}
+.compare tbody td { color: var(--text-dim); }
+.compare tbody td.col-us { color: var(--text); background: rgba(62, 197, 190, 0.04); }
+.compare tbody td .y { color: var(--teal); font-weight: 600; }
+.compare tbody td .n { color: var(--text-faint); }
+.compare tbody td .m { color: var(--gold); }
+
+/* ─────────── Install block (final CTA) ─────────── */
+.install-cta {
+  text-align: center;
+}
+.install-cta .term {
+  margin: 0 auto 32px;
+  text-align: left;
+}
+
+/* ─────────── Footer ─────────── */
+footer {
+  padding: 56px 0 64px;
+  border-top: 1px solid var(--border-soft);
+  margin-top: 0;
+}
+footer .container {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 20px;
+}
+footer .meta { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); }
+footer .meta a { color: var(--text-dim); }
+footer .built {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--text-faint);
+  font-variation-settings: 'opsz' 18, 'WONK' 1;
+}
+
+/* ─────────── Animations ─────────── */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero .eyebrow   { animation: fadeUp 0.7s ease 0.05s both; }
+.hero .headline  { animation: fadeUp 0.8s ease 0.15s both; }
+.hero .subhead   { animation: fadeUp 0.8s ease 0.25s both; }
+.hero .term      { animation: fadeUp 0.8s ease 0.35s both; }
+.hero .cta-row   { animation: fadeUp 0.8s ease 0.45s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01s !important;
+    transition-duration: 0.01s !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 760px) {
+  .three-up { grid-template-columns: 1fr; }
+  nav.top .links { gap: 14px; font-size: 12px; }
+  .compare { font-size: 12px; }
+  .compare th, .compare td { padding: 10px 12px; }
+  .persona { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="container">
+    <a href="#" class="logo">commando</a>
+    <div class="links">
+      <a href="#what">What</a>
+      <a href="#how">How</a>
+      <a href="#why">Why</a>
+      <a href="https://github.com/Frank-Pu/commando">GitHub ↗</a>
+      <a href="zh-CN.html" class="lang-switch">中文</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <p class="eyebrow">Configuration framework · MIT · v0.1</p>
+    <h1 class="headline">Configure your AI<br/><em>digital partner</em> in&nbsp;25&nbsp;minutes.</h1>
+    <p class="subhead">
+      You spend 25 minutes in conversation with your AI tool. It produces <strong>files on your disk</strong>
+      — a Charter, a Schedule, a set of Skills. The OS scheduler runs them. The output lands in your existing
+      Feishu, Notion, or IM. <strong>The agent is yours.</strong>
+    </p>
+    <div class="term">
+<span class="comment"># 30 seconds, in any terminal</span><br/>
+<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span>  <span class="comment"># 25-min dialog → ./my-agent/</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando go-live</span>  <span class="comment"># connect IM + install schedule</span>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">Get Started →</a>
+      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.md">Read the docs</a>
+    </div>
+  </div>
+</header>
+
+<!-- ─────────── What it does ─────────── -->
+<section id="what" class="alt">
+  <div class="container">
+    <p class="section-label reveal">What it does</p>
+    <h2 class="section-title reveal">Configuration is what you <em>own</em>. We make it shareable.</h2>
+    <p class="section-lede reveal">
+      Three primitives. No SaaS lock-in. Your partner runs on whatever AI tool you already use.
+    </p>
+    <div class="three-up">
+      <div class="cell reveal">
+        <p class="num">01 — Charter</p>
+        <h3>The constitution</h3>
+        <p>Your partner's identity, voice, ICP, and red lines. Auto-injected into every call. A markdown file in your repo.</p>
+      </div>
+      <div class="cell reveal">
+        <p class="num">02 — Skills</p>
+        <h3>The discrete tasks</h3>
+        <p>Write a post, debrief a meeting, scan competitors. Activated by Schedule or asked via IM. Each Skill is one SKILL.md.</p>
+      </div>
+      <div class="cell reveal">
+        <p class="num">03 — Schedule</p>
+        <h3>When things fire</h3>
+        <p>Translated into <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">launchd</code> /
+        <code style="font-family:var(--font-mono);font-size:13px;color:var(--coral)">systemd</code>. The OS runs your partner, not us.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── Personas (concrete examples) ─────────── -->
+<section id="how">
+  <div class="container">
+    <p class="section-label reveal">Three real configurations</p>
+    <h2 class="section-title reveal">What does a digital partner <em>actually</em> look like?</h2>
+    <p class="section-lede reveal">
+      Below are three real Charters showing the range. Each is a few hundred lines of markdown that defines the agent.
+    </p>
+
+    <div class="persona reveal">
+      <p class="role">Role · Growth partner</p>
+      <h3>For the indie product creator</h3>
+      <p class="tag">Live for 6+ months serving <a href="https://lemingle.com" style="color:var(--text-dim);text-decoration:underline;">LeMingle</a> — the canonical reference Configuration in this repo.</p>
+      <div class="charter">
+        "I am [Product]'s growth partner. Voice: plain, data-first, never marketing-speak.<br/>
+        Red lines: AIGC manual-edit ≥ 20%, zero outbound links on Xiaohongshu, marketing density ≤ 20%."
+      </div>
+      <div class="schedule">
+        <span class="tag-time">morning_sense</span> 08:00 daily &nbsp;·&nbsp;
+        <span class="tag-time">xhs_draft</span> 11:00 Tue+Fri &nbsp;·&nbsp;
+        <span class="tag-time">weekly_data_review</span> 16:00 Fri &nbsp;·&nbsp;
+        <span class="tag-time">weekly_reflection</span> 19:00 Sun
+      </div>
+    </div>
+
+    <div class="persona reveal">
+      <p class="role">Role · Personal finance advisor</p>
+      <h3>Always-on watcher of your accounts</h3>
+      <p class="tag">Illustrates how strong red lines make the partner safer than a generic assistant.</p>
+      <div class="charter">
+        "I am your personal finance advisor. Red lines: I never execute trades; I never predict markets;<br/>
+        I never recommend high-risk products; my quarterly reports must include a section 'where I might be wrong'."
+      </div>
+      <div class="schedule">
+        <span class="tag-time">daily_portfolio_health</span> 07:00 &nbsp;·&nbsp;
+        <span class="tag-time">monthly_tax_check</span> 1st 09:00 &nbsp;·&nbsp;
+        <span class="tag-time">quarterly_rebalance_review</span> end-of-quarter
+      </div>
+    </div>
+
+    <div class="persona reveal">
+      <p class="role">Role · Job search coach</p>
+      <h3>3-month sprint partner for switching roles</h3>
+      <p class="tag">Time-bounded relationships, with explicit failure criteria built into the Charter.</p>
+      <div class="charter">
+        "I am your career-pivot coach. Voice: warm but no-water. Red lines: I won't pad your résumé;<br/>
+        I won't help you dodge real weaknesses; if 3 months pass with no progress I will say so."
+      </div>
+      <div class="schedule">
+        <span class="tag-time">daily_listing_scan</span> 09:00 &nbsp;·&nbsp;
+        <span class="tag-time">interview_debrief</span> manual &nbsp;·&nbsp;
+        <span class="tag-time">weekly_pacing_check</span> 19:00 Sun
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── Why commando ─────────── -->
+<section id="why" class="alt">
+  <div class="container">
+    <p class="section-label reveal">Why commando</p>
+    <h2 class="section-title reveal">Yours, <em>not rented</em>.</h2>
+    <p class="section-lede reveal">
+      Runtime is commodity. Configuration is the moat. So we deliberately don't compete on runtime — we make the configuration shareable, versionable, and yours.
+    </p>
+    <div class="reveal">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th></th>
+          <th>commando</th>
+          <th>GPTs</th>
+          <th>LangChain</th>
+          <th>Zapier + LLM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Yours to own</th>
+          <td class="col-us"><span class="y">✓</span> files in your repo</td>
+          <td><span class="n">✗</span> on OpenAI</td>
+          <td><span class="y">✓</span> code in your repo</td>
+          <td><span class="n">✗</span> on Zapier</td>
+        </tr>
+        <tr>
+          <th>Pick your LLM</th>
+          <td class="col-us"><span class="y">✓</span> Claude / GLM / Kimi / any</td>
+          <td><span class="n">✗</span> OpenAI only</td>
+          <td><span class="m">⚠</span> rewrite per provider</td>
+          <td><span class="m">⚠</span> integrations only</td>
+        </tr>
+        <tr>
+          <th>OS scheduling</th>
+          <td class="col-us"><span class="y">✓</span> launchd / systemd</td>
+          <td><span class="n">✗</span></td>
+          <td><span class="m">⚠</span> build yourself</td>
+          <td><span class="y">✓</span> their cron</td>
+        </tr>
+        <tr>
+          <th>Output to your tools</th>
+          <td class="col-us"><span class="y">✓</span> Feishu / Notion / IM</td>
+          <td><span class="n">✗</span> ChatGPT UI</td>
+          <td><span class="m">⚠</span> wire yourself</td>
+          <td><span class="y">✓</span> their integrations</td>
+        </tr>
+        <tr>
+          <th>Long-term memory</th>
+          <td class="col-us"><span class="y">✓</span> markdown on disk</td>
+          <td><span class="m">⚠</span> hidden context</td>
+          <td><span class="m">⚠</span> vector DB</td>
+          <td><span class="n">✗</span> none</td>
+        </tr>
+        <tr>
+          <th>Guided onboarding</th>
+          <td class="col-us"><span class="y">✓</span> 25-min dialog</td>
+          <td><span class="n">✗</span> DIY</td>
+          <td><span class="n">✗</span> DIY</td>
+          <td><span class="n">✗</span> DIY</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── Final CTA ─────────── -->
+<section class="install-cta">
+  <div class="container">
+    <p class="section-label reveal">Get started</p>
+    <h2 class="section-title reveal" style="margin-left:auto;margin-right:auto;max-width:24ch;">Your partner runs <em>tomorrow morning</em>.</h2>
+    <p class="section-lede reveal" style="margin-left:auto;margin-right:auto;text-align:center;">
+      Install, onboard, go-live. Tomorrow at 8am, your partner fires its first task and pings you on IM.
+    </p>
+    <div class="reveal">
+    <div class="term">
+<span class="comment"># step 1 · install (30 seconds)</span><br/>
+<span class="prompt">$</span> <span class="cmd">curl -fsSL https://raw.githubusercontent.com/Frank-Pu/commando/main/install.sh | sh</span><br/>
+<br/>
+<span class="comment"># step 2 · 25-min dialog → produces ./my-agent/</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando onboard</span><br/>
+<br/>
+<span class="comment"># step 3 · build Skill bodies + install OS scheduler + connect IM</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando build-skills</span><br/>
+<span class="prompt">$</span> <span class="cmd">commando go-live</span>
+    </div>
+    <div class="cta-row" style="justify-content:center;">
+      <a class="btn btn-primary" href="https://github.com/Frank-Pu/commando">View on GitHub →</a>
+      <a class="btn btn-ghost" href="https://github.com/Frank-Pu/commando/blob/main/README.md">Read the docs</a>
+    </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p class="meta">
+      MIT · made by <a href="https://github.com/Frank-Pu">Frank PU</a> ·
+      <a href="https://github.com/Frank-Pu/commando">github.com/Frank-Pu/commando</a>
+    </p>
+    <p class="built">Runtime is commodity. Configuration is the moat.</p>
+  </div>
+</footer>
+
+<script>
+// Reveal-on-scroll using IntersectionObserver — no library
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
