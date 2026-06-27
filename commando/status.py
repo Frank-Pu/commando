@@ -87,6 +87,19 @@ def run(target: str) -> None:
     else:
         click.echo(_bad("Feishu IM not configured — run `commando connect im-feishu`"))
 
+    obsidian_cred = agent_dir / "credentials" / "obsidian.yaml"
+    if obsidian_cred.exists():
+        try:
+            from commando.connectors.obsidian import is_configured as _obs_ok
+            if _obs_ok(agent_dir):
+                click.echo(_ok(f"Obsidian vault: {obsidian_cred}"))
+            else:
+                click.echo(_bad("Obsidian credentials present but vault path missing/invalid"))
+        except Exception:
+            click.echo(_dim("Obsidian: credentials present (skipped runtime check)"))
+    else:
+        click.echo(_dim("Obsidian: not configured — `commando connect obsidian` (optional)"))
+
     # ── OS scheduler ─────────────────────────────────────────────────────────
     click.echo()
     click.secho("  OS scheduler", bold=True)

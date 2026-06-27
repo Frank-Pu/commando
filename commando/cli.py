@@ -102,6 +102,14 @@ def connect_im_feishu():
     _run_im_feishu()
 
 
+@connect.command("obsidian", help="Guided setup for Obsidian vault — outputs land as markdown.")
+@click.option("--agent-dir", "target", default="./my-agent")
+def connect_obsidian(target):
+    from commando.connect_obsidian import run as _run_obsidian
+
+    _run_obsidian(target)
+
+
 @connect.command("feishu", help="Stub — full backend connection (bitable + wiki) coming in v0.2.")
 def connect_feishu():
     _print_panel(

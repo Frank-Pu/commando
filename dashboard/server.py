@@ -1127,10 +1127,12 @@ def read_connectors_status(agent_dir: Path) -> dict:
     out = {"connectors": []}
     cred_dir = agent_dir / "credentials"
     known = [
-        ("feishu", "Feishu IM", "notify_chat_id"),
+        ("feishu",   "Feishu IM",      "notify_chat_id"),
+        ("obsidian", "Obsidian vault", "vault_path"),
         ("anthropic", "Anthropic API", "api_key"),
-        ("notion", "Notion", "api_key"),
-        ("stripe", "Stripe", "api_key"),
+        ("notion",   "Notion",         "api_key"),
+        ("stripe",   "Stripe",         "api_key"),
+        ("slack",    "Slack",          "webhook_url"),
     ]
     for slug, label, key in known:
         cred_file = cred_dir / f"{slug}.yaml"
