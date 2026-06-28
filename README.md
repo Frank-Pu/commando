@@ -89,9 +89,20 @@ The Skill auto-rebuilds itself against YOUR Charter so its voice matches your ag
 
 ## Status
 
-Shipped: install + onboard + build-skills + go-live + schedule + Feishu IM + local dashboard + Registry (3 verified Skills). Validated through 3 rounds of stranger-onboarding dogfood.
+Shipped: install + onboard + build-skills + go-live + schedule + Feishu IM + Obsidian + local dashboard + Registry (3 verified Skills). Validated through 3 rounds of stranger-onboarding dogfood.
 
 Not yet: Linux `systemd` template (mac launchd works), more verified third-party agent CLIs, Stripe/Plausible KPI dashboard.
+
+### ⚠ Runtime requirement (important — don't skip)
+
+The interactive parts (`commando onboard`, `commando build-skills`) work in any AI tool — IDE or CLI. But **scheduled tasks fire from launchd / systemd / cron**, which need a **headless** LLM backend:
+
+- **A CLI agent in PATH** — `claude` (Claude Code), `codex`, `kimi`, `glm`, `qwen`, `doubao`, `minimax`, `gemini`. The agent must be logged in (auth survives subprocesses).
+- **Or an API key** — `ANTHROPIC_API_KEY` or `ZHIPU_API_KEY` exported in shell rc. ~$5 of Anthropic credit covers months of light use.
+
+**IDE agents alone (Cursor / Windsurf / Trae / VS Code Copilot / JetBrains AI) are not enough for scheduled runs** — they only run while you have the IDE open. Pair an IDE with one of the headless options above.
+
+If neither is configured, `commando build-skills --apply` and scheduled task firings will fail with a clear "no LLM backend available" error pointing you back here.
 
 ---
 
